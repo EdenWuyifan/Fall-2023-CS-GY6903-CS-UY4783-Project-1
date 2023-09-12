@@ -1,5 +1,6 @@
 import sys
 import string
+import random
 
 
 ctoi = { ' ': 0 }
@@ -22,7 +23,7 @@ def construct_key(key: str) -> list[int]:
 
 
 def gen_coin(c_ptr, t, L) -> float:
-  ...
+  return random.random()
 
 
 def encrypt(msg: list[int], key: list[int]) -> str:
@@ -38,7 +39,7 @@ def encrypt(msg: list[int], key: list[int]) -> str:
       j = (len(cipher) + 1) % len(key)
       cipher.append((msg[i] + key[j]) % 27)
 
-  return ''.join(cipher)
+  return ''.join(itoc[c] for c in cipher)
   
 
 def main():
@@ -47,6 +48,9 @@ def main():
 
   print(f"{msg=}")
   print(f"{key=}")
+
+  cipher = encrypt(msg, key)
+  print(f"{cipher=}")
 
 
 if __name__ == "__main__":
