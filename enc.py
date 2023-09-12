@@ -32,9 +32,9 @@ def encrypt(msg: list[int], key: list[int]) -> str:
 
   cipher_ptr = 0
   msg_ptr = 0
-  num_rand_ch = 0
+  rand_idx = []
   
-  while len(cipher) < len(msg) + num_rand_ch:
+  while len(cipher) < len(msg) + len(rand_idx):
     coin = gen_coin(cipher_ptr, len(key), len(msg))
 
     if coin >= COIN_THRESHOLD:
@@ -44,11 +44,11 @@ def encrypt(msg: list[int], key: list[int]) -> str:
     else:
       c = random.randint(0, 26)
       cipher.append(c)
-      num_rand_ch += 1
+      rand_idx.append(cipher_ptr)
     cipher_ptr += 1
 
 
-  return num_rand_ch, ''.join(itoc[c] for c in cipher)
+  return rand_idx, ''.join(itoc[c] for c in cipher)
   
 
 def main():
@@ -58,8 +58,8 @@ def main():
   print(f"{msg=}")
   print(f"{key=}")
 
-  num_rand_ch, cipher = encrypt(msg, key)
-  print(f"{num_rand_ch=}")
+  rand_idx, cipher = encrypt(msg, key)
+  print(f"{len(rand_idx)=} {rand_idx}")
   print(f"{cipher=}")
 
 
