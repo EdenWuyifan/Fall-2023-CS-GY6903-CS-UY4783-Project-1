@@ -2,6 +2,7 @@ import sys
 import string
 import random
 
+COIN_THRESHOLD = 0.05
 
 ctoi = { ' ': 0 }
 
@@ -29,17 +30,25 @@ def gen_coin(c_ptr, t, L) -> float:
 def encrypt(msg: list[int], key: list[int]) -> str:
   cipher = []
 
-  i = 0
+  cipher_ptr = 0
+  msg_ptr = 0
   num_rand_ch = 0
   
   while len(cipher) < len(msg) + num_rand_ch:
-    coin = gen_coin(len(cipher), len(key), len(msg))
+    coin = gen_coin(cipher_ptr, len(key), len(msg))
 
-    if coin < 0.05:
-      j = (len(cipher) + 1) % len(key)
-      cipher.append((msg[i] + key[j]) % 27)
+    if coin >= COIN_THRESHOLD:
+      j = (msg_ptr + 1) % len(key)
+      cipher.append((msg[msg_ptr] + key[j]) % 27)
+      msg_ptr += 1
+    else:
+      c = random.randint(0, 26)
+      cipher.append(c)
+      num_rand_ch += 1
+    cipher_ptr += 1
 
-  return ''.join(itoc[c] for c in cipher)
+
+  return num_rand_ch, ''.join(itoc[c] for c in cipher)
   
 
 def main():
@@ -49,7 +58,8 @@ def main():
   print(f"{msg=}")
   print(f"{key=}")
 
-  cipher = encrypt(msg, key)
+  num_rand_ch, cipher = encrypt(msg, key)
+  print(f"{num_rand_ch=}")
   print(f"{cipher=}")
 
 
