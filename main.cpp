@@ -4,7 +4,7 @@
 #include <vector>
 
 // 1. Guess the key length
-void klasiski_analysis(const std::string &ciphertext) {
+void kasiski_analysis(const std::string &ciphertext) {
   std::map<std::size_t, std::vector<std::size_t>> candidates;
 
   for (std::size_t key_length = 2; key_length <= 24; key_length++) {
@@ -50,6 +50,6 @@ int main(int argc, char *argv[]) {
   std::string ciphertext = argv[1];
   std::cout << ciphertext << std::endl;
 
-  klasiski_analysis(ciphertext);
+  kasiski_analysis(ciphertext);
   return 0;
 }
