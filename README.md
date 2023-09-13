@@ -1,3 +1,11 @@
+# General Usage
+
+The cryptanalysis program in written in C++, on the file `main.cpp`.
+You need to install `make` to execute the following commands:
+
+- `make run ARGS="ciphertext"` will run cryptanalysis on the given ciphertext
+- `make build` will build the cryptanalysis program at `build/main`
+
 # `enc.py`
 
 This is a simple python program you can play around with to get a feel for how encryption works.

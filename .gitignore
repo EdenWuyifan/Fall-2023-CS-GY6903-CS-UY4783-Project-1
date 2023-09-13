@@ -58,3 +58,7 @@ __pycache__/
 **/__pycache__/
 .ipynb_checkpoints
 **/.ipynb_checkpoints
+
+
+# make artifacts
+build
