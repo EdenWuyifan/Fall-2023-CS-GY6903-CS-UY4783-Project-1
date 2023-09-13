@@ -8,10 +8,10 @@ class CryptAnalysis {
   std::string cipher;
 
   /// @brief The candidate plaintexts for test 1
-  std::vector<std::string> candidates;
+  std::vector<std::string> plaintexts;
 
-  /// @brief The result of Kasiski analysis, for each key length (2~24)
-  std::map<std::size_t, std::vector<size_t>> displacements;
+  /// @brief The result of Kasiski analysis
+  std::map<std::string, std::vector<std::size_t>> repeated_strings;
 
   /// @brief Compute the edit distance of two string. Probably useful for
   /// guessing the best plaintext for test 1.
@@ -19,17 +19,17 @@ class CryptAnalysis {
   std::size_t edit_distance(const std::string &a, const std::string &b);
 
  public:
-  CryptAnalysis(std::string cipher, std::vector<std::string> candidates);
+  CryptAnalysis(std::string cipher, std::vector<std::string> plaintexts);
   ~CryptAnalysis();
 
   // Run kasiski analysis and store the result internally
   void kasiski_analysis();
   // Guess the best key length and produces the plaintexts
   std::string crack();
-};
 
-void kasiski_analysis(const std::string &ciphertext);
-std::string crack(const std::string &ciphertext, const int key_len);
+  // Print the analysis result
+  void report();
+};
 
 char forward(char m, int amount);
 char backward(char c, int amount);
