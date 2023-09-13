@@ -1,3 +1,5 @@
+#include "main.h"
+
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -34,8 +36,23 @@ void kasiski_analysis(const std::string &ciphertext) {
   }
 }
 
-// 2. Try a key of a given key length
-void crack(const std::string &ciphertext, const int key_len) {}
+// 2. Try a key of a given key length, and guess the plaintext
+std::string crack(const std::string &ciphertext, const int key_len) {}
+
+char forward(char m, int amount) {
+  amount %= 27;
+  if (m == ' ') {
+    if (amount == 0) {
+      return ' ';
+    } else {
+      return ('a' + amount);
+    }
+  }
+
+  return (m - 'a' + amount) % 27 + 'a';
+}
+
+char backward(char c, int amount) {}
 
 void print_plain() {
   std::fstream plaintexts("examples/plaintext1");
