@@ -25,7 +25,7 @@ class CryptAnalysis {
   // Run kasiski analysis and store the result internally
   void kasiski_analysis();
   // Guess the best key length and produces the plaintexts
-  std::string crack();
+  void crack();
 
   // Print the analysis result
   void report();

@@ -41,10 +41,8 @@ void CryptAnalysis::kasiski_analysis() {
         // already analyzed this substr
         break;
       }
-      std::cout << "trying substr=" << substr;
       std::vector<std::size_t> occurences =
           find_all_occurrences(cipher, substr);
-      std::cout << ", found " << occurences.size() << " occurrences\n";
       repeated_strings[substr] = occurences;
     }
   }
@@ -59,12 +57,38 @@ void CryptAnalysis::kasiski_analysis() {
 std::size_t CryptAnalysis::edit_distance(const std::string &a,
                                          const std::string &b) {}
 
-std::string CryptAnalysis::crack() {}
+void CryptAnalysis::crack() {
+  // Guess key lengths
+  // GCD works if there is no (believed) random characters!
 
-// 1. Guess the key length
+  // compute deltas (key_length => deltas)
+  std::map<size_t, std::vector<size_t>> deltas;
+  for (auto r : repeated_strings) {
+    std::string substr = r.first;
+    std::vector<std::size_t> indicies = r.second;
+
+    for (auto i = indicies.begin(); (i + 1) != indicies.end(); i++) {
+      size_t a = *i;
+      size_t b = *(i + 1);
+      size_t delta = b - a;
+      deltas[substr.size()].push_back(delta);
+    }
+  }
+  // some delta values will not make sense (because of the random noises)
+
+  for (auto d : deltas) {
+    std::size_t key_len = d.first;
+    std::vector<std::size_t> ds = d.second;
+
+    std::cout << key_len << ": ";
+    for (auto d : ds) {
+      std::cout << d << ' ';
+    }
+    std::cout << '\n';
+  }
+}
+
 void CryptAnalysis::report() {
-  // key_length => substring occurence map
-
   std::cout << "reporting...\n";
 
   for (auto r : repeated_strings) {
@@ -77,10 +101,6 @@ void CryptAnalysis::report() {
     std::cout << std::endl;
   }
 }
-
-// 2. Try a key of a given key length, and guess the plaintext
-std::string CryptAnalysis::crack(const std::string &ciphertext,
-                                 const int key_len) {}
 
 char forward(char m, int amount) {
   amount %= 27;
@@ -114,7 +134,7 @@ int main(int argc, char *argv[]) {
   auto analysis = new CryptAnalysis(ciphertext, dictionary);
   analysis->kasiski_analysis();
   analysis->report();
+  analysis->crack();
 
-  // kasiski_analysis(ciphertext);
   return 0;
 }
