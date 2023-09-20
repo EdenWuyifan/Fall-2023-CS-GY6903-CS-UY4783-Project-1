@@ -62,7 +62,8 @@ void CryptAnalysis::crack() {
   // GCD works if there is no (believed) random characters!
 
   // compute deltas (key_length => deltas)
-  std::map<size_t, std::vector<size_t>> deltas;
+  // std::vector<size_t> deltas;
+  std::map<size_t, size_t> deltas;  // delta => count
   for (auto r : repeated_strings) {
     std::string substr = r.first;
     std::vector<std::size_t> indicies = r.second;
@@ -71,20 +72,19 @@ void CryptAnalysis::crack() {
       size_t a = *i;
       size_t b = *(i + 1);
       size_t delta = b - a;
-      deltas[substr.size()].push_back(delta);
+      if (deltas.count(delta) == 0) {
+        deltas[delta] = 0;
+      }
+      deltas[delta] += 1;
     }
   }
   // some delta values will not make sense (because of the random noises)
+  // so we choose the most frequent delta
 
   for (auto d : deltas) {
-    std::size_t key_len = d.first;
-    std::vector<std::size_t> ds = d.second;
-
-    std::cout << key_len << ": ";
-    for (auto d : ds) {
-      std::cout << d << ' ';
-    }
-    std::cout << '\n';
+    std::size_t delta = d.first;
+    std::size_t count = d.second;
+    std::cout << delta << ':' << count << '\n';
   }
 }
 
@@ -92,9 +92,8 @@ void CryptAnalysis::report() {
   std::cout << "reporting...\n";
 
   for (auto r : repeated_strings) {
-    std::string s = r.first;
     std::vector<std::size_t> occurences = r.second;
-    std::cout << s << '\n';
+    std::cout << r.first << ": ";
     for (auto m : occurences) {
       std::cout << m << ' ';
     }
