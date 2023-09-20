@@ -50,17 +50,31 @@ def encrypt(msg: list[int], key: list[int]) -> str:
 
   return rand_idx, ''.join(itoc[c] for c in cipher)
   
+PLAINTEXT1 = "resources/plaintext1.txt"
 
 def main():
-  msg = [ctoi[c] for c in sys.argv[1]]
-  key = construct_key(sys.argv[2])
+  plaintexts = []
+  with open(PLAINTEXT1, "r") as f:
+    for line in f.readlines():
+      if line.startswith("Test") or line.startswith("Candid"):
+        continue
+      if not line.strip():
+        continue
+  
+      plaintexts.append(line.strip())
 
-  print(f"{msg=}")
-  print(f"{key=}")
+  print(plaintexts)
 
-  rand_idx, cipher = encrypt(msg, key)
-  print(f"{len(rand_idx)=} {rand_idx}")
-  print(f"{cipher=}")
+  for i, ptext in enumerate(plaintexts):
+    msg = [ctoi[c] for c in ptext]
+    key = construct_key(sys.argv[1])
+
+    rand_idx, cipher = encrypt(msg, key)
+    print(f"{len(rand_idx)=} {rand_idx}")
+    print(f"{cipher=}")
+
+    with open(f'resources/cipher_{i+1}', 'w') as f:
+      f.write(cipher)
 
 
 if __name__ == "__main__":

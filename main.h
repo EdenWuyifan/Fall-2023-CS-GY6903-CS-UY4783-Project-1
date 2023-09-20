@@ -13,8 +13,9 @@ class CryptAnalysis {
   /// @brief The candidate plaintexts for test 2
   std::vector<std::string> dict2;
 
-  /// @brief The result of Kasiski analysis
-  std::map<std::string, std::vector<std::size_t>> repeated_strings;
+  /// @brief Factors of distances between repeated strings, as the result of
+  /// Kasiski analysis
+  std::vector<std::pair<size_t, size_t>> factors;
 
   /// @brief Compute the edit distance of two string. Probably useful for
   /// guessing the best plaintext for test 1.

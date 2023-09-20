@@ -1,12 +1,19 @@
 #include "main.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include <vector>
 
 // `L`: short for msg_length
 // `t`: short for key_length
+
+bool sortByVal(const std::pair<size_t, size_t> &a,
+               const std::pair<size_t, size_t> &b) {
+  return (a.second > b.second);
+}
 
 CryptAnalysis::CryptAnalysis(std::string cipher, std::vector<std::string> dict1,
                              std::vector<std::string> dict2)
@@ -26,6 +33,18 @@ std::vector<std::size_t> find_all_occurrences(const std::string &s,
   return occurrences;
 }
 
+std::set<std::size_t> factorize(std::size_t n) {
+  std::set<std::size_t> factors;
+  factors.insert(1);
+  for (size_t i = 2; i < n / 2; i++) {
+    if (n % i == 0) {
+      factors.insert(i);
+      factors.insert(n / i);
+    }
+  }
+  return factors;
+}
+
 void CryptAnalysis::kasiski_analysis() {
   std::map<std::string, std::vector<std::size_t>> repeated_strings;
   for (std::size_t t = 2; t <= 24; t++) {
@@ -41,27 +60,18 @@ void CryptAnalysis::kasiski_analysis() {
       }
       std::vector<std::size_t> occurences =
           find_all_occurrences(cipher, substr);
+
       repeated_strings[substr] = occurences;
     }
   }
 
   for (auto r : repeated_strings) {
-    if (r.second.size() > 1) {
-      this->repeated_strings[r.first] = r.second;
+    if (r.second.size() <= 1) {
+      repeated_strings.erase(r.first);
     }
   }
-}
 
-std::size_t CryptAnalysis::edit_distance(const std::string &a,
-                                         const std::string &b) {}
-
-void CryptAnalysis::crack() {
-  // Guess key lengths
-  // GCD works if there is no (believed) random characters!
-
-  // compute deltas (key_length => deltas)
-  // std::vector<size_t> deltas;
-  std::map<size_t, size_t> deltas;  // delta => count
+  std::set<size_t> deltas;
   for (auto r : repeated_strings) {
     std::string substr = r.first;
     std::vector<std::size_t> indicies = r.second;
@@ -69,35 +79,47 @@ void CryptAnalysis::crack() {
     for (auto i = indicies.begin(); (i + 1) != indicies.end(); i++) {
       size_t a = *i;
       size_t b = *(i + 1);
-      size_t delta = b - a;
-      if (deltas.count(delta) == 0) {
-        deltas[delta] = 0;
-      }
-      deltas[delta] += 1;
+      deltas.insert(b - a);
     }
   }
-  // some delta values will not make sense (because of the random noises)
-  // so we choose the most frequent delta
+
+  std::cout << "deltas done!\n";
+
+  std::map<size_t, size_t> factor_counts;
 
   for (auto d : deltas) {
-    std::size_t delta = d.first;
-    std::size_t count = d.second;
-    std::cout << delta << ':' << count << '\n';
-  }
-}
-
-void CryptAnalysis::report() {
-  std::cout << "reporting...\n";
-
-  for (auto r : repeated_strings) {
-    std::vector<std::size_t> occurences = r.second;
-    std::cout << r.first << ": ";
-    for (auto m : occurences) {
-      std::cout << m << ' ';
+    std::set<size_t> factors = factorize(d);
+    for (auto f : factors) {
+      // skip factors which are too small or too big
+      if ((f < 2) || (f > 24)) {
+        continue;
+      }
+      if (factor_counts.count(f) == 0) {
+        factor_counts[f] = 0;
+      }
+      factor_counts[f] += 1;
     }
-    std::cout << std::endl;
   }
+
+  factors.assign(factor_counts.begin(), factor_counts.end());
+  std::cout << "Factors collected...\n";
+  for (auto fc : factors) {
+    std::cout << fc.first << ':' << fc.second << std::endl;
+  }
+
+  std::sort(factors.begin(), factors.end(), sortByVal);
+
+  std::cout << "End of analysis\n";
 }
+
+std::size_t CryptAnalysis::edit_distance(const std::string &a,
+                                         const std::string &b) {
+  return 0;
+}
+
+void CryptAnalysis::crack() {}
+
+void CryptAnalysis::report() {}
 
 char forward(char m, int amount) {
   amount %= 27;
@@ -161,16 +183,17 @@ int main(int argc, char *argv[]) {
   std::string ciphertext;
 
   std::cout << "Input ciphertext:\n";
-  std::cin >> ciphertext;
+  std::getline(std::cin, ciphertext);
 
   std::vector<std::string> dict1 = parse_dict1();
   std::vector<std::string> dict2 = parse_dict2();
 
-  // TODO: parse dict 2
   auto analysis = new CryptAnalysis(ciphertext, dict1, dict2);
   analysis->kasiski_analysis();
-  analysis->report();
+  // analysis->report();
   analysis->crack();
+
+  delete analysis;
 
   return 0;
 }
