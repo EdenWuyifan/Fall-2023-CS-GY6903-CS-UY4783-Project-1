@@ -1,13 +1,21 @@
 CC=c++
+PYTHON=python
 ARGS=exampleestringexamplestring
 CPP_FLAGS = -std=c++17 -g
 
-.PHONY: all build run
+OBJ=build/main
+
+.PHONY: all build run enc
 
 all: build run
 
-build: main.cpp main.h
+$(OBJ): main.cpp main.h
 	$(CC) $(CPP_FLAGS) -o build/main main.cpp
 
-run: build/main
+build: $(OBJ)
+
+run: $(OBJ)
 	./build/main $(ARGS)
+
+enc: enc.py
+	$(PYTHON) enc.py $(ARGS)
