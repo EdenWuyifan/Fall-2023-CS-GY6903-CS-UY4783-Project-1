@@ -8,7 +8,10 @@ class CryptAnalysis {
   std::string cipher;
 
   /// @brief The candidate plaintexts for test 1
-  std::vector<std::string> plaintexts;
+  std::vector<std::string> dict1;
+
+  /// @brief The candidate plaintexts for test 2
+  std::vector<std::string> dict2;
 
   /// @brief The result of Kasiski analysis
   std::map<std::string, std::vector<std::size_t>> repeated_strings;
@@ -19,7 +22,9 @@ class CryptAnalysis {
   std::size_t edit_distance(const std::string &a, const std::string &b);
 
  public:
-  CryptAnalysis(std::string cipher, std::vector<std::string> plaintexts);
+  CryptAnalysis(std::string cipher, std::vector<std::string> dict1,
+                std::vector<std::string> dict2);
+
   ~CryptAnalysis();
 
   // Run kasiski analysis and store the result internally

@@ -8,11 +8,9 @@
 // `L`: short for msg_length
 // `t`: short for key_length
 
-CryptAnalysis::CryptAnalysis(std::string cipher,
-                             std::vector<std::string> plaintexts) {
-  this->cipher = cipher;
-  this->plaintexts = plaintexts;
-}
+CryptAnalysis::CryptAnalysis(std::string cipher, std::vector<std::string> dict1,
+                             std::vector<std::string> dict2)
+    : cipher(cipher), dict1(dict1), dict2(dict2) {}
 
 CryptAnalysis::~CryptAnalysis() {}
 
@@ -125,12 +123,51 @@ void print_plain() {
   std::cout << s << std::endl;
 }
 
-int main(int argc, char *argv[]) {
-  std::string ciphertext = argv[1];
-  std::cout << "cipher=" << ciphertext << std::endl;
+std::vector<std::string> parse_dict1() {
+  std::string line;
+  std::ifstream plain1("resources/plaintext1.txt");
+  std::vector<std::string> dict1;
 
-  std::vector<std::string> dictionary;
-  auto analysis = new CryptAnalysis(ciphertext, dictionary);
+  std::getline(plain1, line);
+  for (size_t i = 0; i < 5; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      std::getline(plain1, line);
+    }
+    std::getline(plain1, line);
+    dict1.push_back(line);
+  }
+  plain1.close();
+
+  return dict1;
+}
+
+std::vector<std::string> parse_dict2() {
+  std::string line;
+  std::ifstream plain2("resources/plaintext2.txt");
+  std::vector<std::string> dict2;
+
+  std::getline(plain2, line);
+  std::getline(plain2, line);
+  while (std::getline(plain2, line)) {
+    dict2.push_back(line);
+  }
+
+  plain2.close();
+
+  return dict2;
+}
+
+int main(int argc, char *argv[]) {
+  std::string ciphertext;
+
+  std::cout << "Input ciphertext:\n";
+  std::cin >> ciphertext;
+
+  std::vector<std::string> dict1 = parse_dict1();
+  std::vector<std::string> dict2 = parse_dict2();
+
+  // TODO: parse dict 2
+  auto analysis = new CryptAnalysis(ciphertext, dict1, dict2);
   analysis->kasiski_analysis();
   analysis->report();
   analysis->crack();
