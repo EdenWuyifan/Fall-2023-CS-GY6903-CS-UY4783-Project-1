@@ -8,6 +8,7 @@ OBJ=build/main
 .PHONY: all build run enc clean
 
 all: build
+	cat resources/cipher_1 | ./build/main
 
 build: $(OBJ)
 

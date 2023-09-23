@@ -1,5 +1,6 @@
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 class CryptAnalysis {
@@ -14,13 +15,16 @@ class CryptAnalysis {
   std::vector<std::string> dict2;
 
   /// @brief Factors of distances between repeated strings, as the result of
-  /// Kasiski analysis
+  /// Kasiski analysis. (factor => counts) mapping.
   std::vector<std::pair<size_t, size_t>> factors;
 
   /// @brief Compute the edit distance of two string. Probably useful for
   /// guessing the best plaintext for test 1.
   /// @return The edit distance of two string
   std::size_t edit_distance(const std::string &a, const std::string &b);
+
+  std::unordered_map<int, int> make_counter(const std::vector<int> &diffs);
+  float entropy(const std::unordered_map<int, int> &counter);
 
  public:
   CryptAnalysis(std::string cipher, std::vector<std::string> dict1,
@@ -32,6 +36,8 @@ class CryptAnalysis {
   void kasiski_analysis();
   // Guess the best key length and produces the plaintexts
   void crack();
+
+  void entropy_analysis();
 
   // Print the analysis result
   void report();
