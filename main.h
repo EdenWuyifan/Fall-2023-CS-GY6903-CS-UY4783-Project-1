@@ -3,8 +3,12 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
 #include <vector>
+
+bool sortByVal(const std::pair<size_t, size_t> &a,
+               const std::pair<size_t, size_t> &b) {
+  return (a.second > b.second);
+}
 
 char forward(char m, int amount) {
   amount %= 27;
@@ -90,6 +94,3 @@ class KasiskiAnalysis {
   // Run kasiski analysis and store the result internally
   void run();
 };
-
-char forward(char m, int amount);
-char backward(char c, int amount);

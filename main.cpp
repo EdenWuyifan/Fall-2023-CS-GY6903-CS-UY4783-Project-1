@@ -123,11 +123,6 @@ void EntropyAnalysis::run(int end) {
   auto x = detect_trend_anomaly(trends);
 }
 
-bool sortByVal(const std::pair<size_t, size_t> &a,
-               const std::pair<size_t, size_t> &b) {
-  return (a.second > b.second);
-}
-
 KasiskiAnalysis::KasiskiAnalysis(std::string ciphertext)
     : ciphertext(ciphertext) {}
 
