@@ -1,26 +1,36 @@
 #include "main.h"
 
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <set>
 
 // `L`: short for msg_length
 // `t`: short for key_length
 
-int diff(int c, int p) {
-  int d = c - p;
-  if (d < 0) {
-    d += 27;
+EntropyAnalysis::EntropyAnalysis(std::string ciphertext,
+                                 std::vector<std::string> plaintexts) {
+  assert(plaintexts.size() == 5);
+  this->ciphertext = ciphertext;
+  this->plaintexts = plaintexts;
+
+  this->cipher_stream = encode(this->ciphertext);
+  for (auto p : this->plaintexts) {
+    std::vector<int> plain_stream = encode(p);
+    this->plain_streams.push_back(plain_stream);
+
+    std::vector<int> shift;
+    for (size_t i = 0; i < plain_stream.size(); i++) {
+      int d = diff(cipher_stream[i], plain_stream[i]);
+      shift.push_back(d);
+    }
+    this->diffs.push_back(shift);
   }
-  return d;
 }
 
-typedef std::map<int, int> Counter;
-
-float entropy(const Counter &counter) {
+float EntropyAnalysis::compute_entropy(const Counter &counter) {
   float ent = .0f;
   int all_counts = 0;
   for (auto cnt : counter) {
@@ -34,74 +44,83 @@ float entropy(const Counter &counter) {
   return ent;
 }
 
-int ctoi(char c) {
-  assert(c == ' ' | ('a' < c < 'z'));
-  if (c == ' ') {
-    return 0;
-  }
-  return (c - 'a' + 1);
-}
-
-std::vector<int> encode(const std::string &text) {
-  std::vector<int> encoded;
-  encoded.reserve(text.length());
-  for (char c : text) {
-    encoded.push_back(ctoi(c));
-  }
-  return encoded;
-}
-
-Counter make_counter(const std::vector<int> &diffs) {
+Counter EntropyAnalysis::make_counter(std::vector<int>::iterator begin,
+                                      std::vector<int>::iterator end) {
   Counter counter;
-  for (auto d : diffs) {
-    counter[d]++;
+  for (auto it = begin; it != end; it++) {
+    counter[*it]++;
   }
-
   return counter;
 }
 
-float entropy_analysis(const std::string &ciphertext,
-                       const std::string &plaintext, int end = 200,
-                       int start = 8) {
-  std::vector<int> cipher_stream = encode(ciphertext);
-  std::vector<int> plain_stream = encode(plaintext);
+std::vector<float> EntropyAnalysis::compute_entropy_trend(
+    Encoded::iterator diff_begin, Encoded::iterator diff_end, int initial) {
+  assert(diff_begin + initial <= diff_end);
+  std::vector<float> trend;
 
-  std::vector<int> diffs;
-  diffs.reserve(end);
+  Counter counter = make_counter(diff_begin, diff_begin + initial);
+  trend.push_back(compute_entropy(counter));
 
-  for (size_t i = 0; i < end; i++) {
-    int d = diff(cipher_stream[i], plain_stream[i]);
-    diffs.push_back(d);
+  for (auto it = diff_begin + initial; it != diff_end - 1; it++) {
+    counter[*it]++;
+    trend.push_back(compute_entropy(counter));
   }
 
-  Counter cntr = make_counter(diffs);
-  return entropy(cntr);
+  return trend;
 }
 
-std::vector<float> entropy_trend(const std::string &ciphertext,
-                                 const std::string &plaintext, int end = 200,
-                                 int start = 8) {
-  std::vector<int> cipher_stream = encode(ciphertext);
-  std::vector<int> plain_stream = encode(plaintext);
+std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
+    std::vector<std::vector<float>> trends) {
+  std::vector<float> trend_diffs;
+  trend_diffs.reserve(trends.size() * (trends.size() - 1));
+  float trend_sum = 0.0f;
+  float trend_sqr_sum = 0.0f;
+  for (auto i = trends.begin(); i != trends.end(); i++) {
+    for (auto j = i + 1; j != trends.end(); j++) {
+      std::vector<float> trend_i = *i;
+      std::vector<float> trend_j = *j;
+      float trend_diff = 0.0f;
+      for (size_t k = 0; k < trend_i.size(); k++) {
+        trend_diff += (trend_i[k] - trend_j[k]) * (trend_i[k] - trend_j[k]);
+      }
 
-  std::vector<int> diffs;
-  diffs.reserve(end);
+      trend_diffs.push_back(trend_diff);
+      trend_sum += trend_diff;
+      trend_sqr_sum += trend_diff * trend_diff;
 
-  for (size_t i = 0; i < start; i++) {
-    int d = diff(cipher_stream[i], plain_stream[i]);
-    diffs.push_back(d);
+      // std::cout << (i - trends.begin()) << ' ' << (j - trends.begin()) << ' '
+      //           << trend_diff << '\n';
+    }
   }
-  Counter cntr = make_counter(diffs);
 
-  std::vector<float> ent_trend;
-  ent_trend.push_back(entropy(cntr));
-  for (size_t i = start; i < end; i++) {
-    int d = diff(cipher_stream[i], plain_stream[i]);
-    cntr[d]++;
-    ent_trend.push_back(entropy(cntr));
+  float trend_avg = trend_sum / (float)trend_diffs.size();
+  float trend_var =
+      trend_sqr_sum / (float)trend_diffs.size() - trend_avg * trend_avg;
+
+  std::cout << "trend_diff_avg=" << trend_avg
+            << " trend_diff_var=" << sqrtf32(trend_var) << '\n';
+
+  return std::optional<size_t>();
+}
+
+void EntropyAnalysis::run(int end) {
+  int i = 0;
+  std::vector<std::vector<float>> trends;
+  for (auto d : this->diffs) {
+    std::vector<float> trend =
+        compute_entropy_trend(d.begin(), d.begin() + 16, 8);
+    trends.push_back(trend);
+
+    // std::cout << (i + 1) << std::endl;
+    // std::cout << std::fixed << std::setprecision(3);
+    // for (auto ent : trend) {
+    //   std::cout << std::setw(5) << ent << ' ';
+    // }
+    // std::cout << '\n';
+
+    i++;
   }
-
-  return ent_trend;
+  auto x = detect_trend_anomaly(trends);
 }
 
 bool sortByVal(const std::pair<size_t, size_t> &a,
@@ -109,11 +128,10 @@ bool sortByVal(const std::pair<size_t, size_t> &a,
   return (a.second > b.second);
 }
 
-CryptAnalysis::CryptAnalysis(std::string cipher, std::vector<std::string> dict1,
-                             std::vector<std::string> dict2)
-    : cipher(cipher), dict1(dict1), dict2(dict2) {}
+KasiskiAnalysis::KasiskiAnalysis(std::string ciphertext)
+    : ciphertext(ciphertext) {}
 
-CryptAnalysis::~CryptAnalysis() {}
+KasiskiAnalysis::~KasiskiAnalysis() {}
 
 std::vector<std::size_t> find_all_occurrences(const std::string &s,
                                               const std::string &niddle) {
@@ -139,21 +157,21 @@ std::set<std::size_t> factorize(std::size_t n) {
   return factors;
 }
 
-void CryptAnalysis::kasiski_analysis() {
+void KasiskiAnalysis::run() {
   std::map<std::string, std::vector<std::size_t>> repeated_strings;
   for (std::size_t t = 3; t <= 24; t++) {
     // std::cout << "analyzing for key length t=" << t << std::endl;
-    for (std::size_t i = 0; i < cipher.size() - t; i++) {
-      if (i + t >= cipher.size()) {
+    for (std::size_t i = 0; i < ciphertext.size() - t; i++) {
+      if (i + t >= ciphertext.size()) {
         break;
       }
-      std::string substr = cipher.substr(i, t);
+      std::string substr = ciphertext.substr(i, t);
       if (repeated_strings.count(substr)) {
         // already analyzed this substr
         break;
       }
       std::vector<std::size_t> occurences =
-          find_all_occurrences(cipher, substr);
+          find_all_occurrences(ciphertext, substr);
 
       repeated_strings[substr] = occurences;
     }
@@ -205,63 +223,6 @@ void CryptAnalysis::kasiski_analysis() {
   std::cout << "End of analysis\n";
 }
 
-float CryptAnalysis::entropy(const std::unordered_map<int, int> &counter) {
-  float ent = .0f;
-  for (auto c : counter) {
-    float p = (float)(c.second + 1) / 27.;
-    ent += p * std::log(p);
-  }
-
-  return ent;
-}
-
-std::unordered_map<int, int> CryptAnalysis::make_counter(
-    const std::vector<int> &diffs) {
-  std::unordered_map<int, int> counter;
-  for (auto d : diffs) {
-    counter[d]++;
-  }
-
-  for (auto c : counter) {
-    std::cout << c.first << ' ' << c.second << '\n';
-  }
-
-  return counter;
-}
-
-std::size_t CryptAnalysis::edit_distance(const std::string &a,
-                                         const std::string &b) {
-  return 0;
-}
-
-void CryptAnalysis::crack() {}
-
-void CryptAnalysis::report() {}
-
-char forward(char m, int amount) {
-  amount %= 27;
-  if (m == ' ') {
-    if (amount == 0) {
-      return ' ';
-    } else {
-      return ('a' + amount);
-    }
-  }
-
-  return (m - 'a' + amount) % 27 + 'a';
-}
-
-char backward(char c, int amount) {}
-
-void print_plain() {
-  std::fstream plaintexts("examples/plaintext1");
-
-  std::string s;
-  std::getline(plaintexts, s);
-
-  std::cout << s << std::endl;
-}
-
 std::vector<std::string> parse_dict1() {
   std::string line;
   std::ifstream plain1("resources/plaintext1.txt");
@@ -310,56 +271,30 @@ std::vector<int> compute_diff(const std::vector<int> &pcode,
   return diff;
 }
 
-void CryptAnalysis::entropy_analysis() {
-  auto ccode = encode(this->cipher);
-  for (auto pt : this->dict1) {
-    auto pcode = encode(pt);
-    auto diffs = compute_diff(pcode, ccode);
-    auto cntr = make_counter(diffs);
-    float ent = entropy(cntr);
-
-    std::cout << ent << '\n';
-  }
-}
-
-std::vector<float> measure_trend_diff(
-    const std::vector<std::vector<float>> &ent_trend_list) {}
-
 int main(int argc, char *argv[]) {
   std::string ciphertext;
+
+  if (argc < 2) {
+    std::cerr << "Usage: main <1|2>\n1 for test 1\n2 for test 2\n";
+    exit(2);
+  }
+
+  std::string test = argv[1];
+
+  if (test == "2") {
+    std::cerr << "Not implemented yet\n";
+    return 0;
+  }
 
   std::cout << "Input ciphertext:\n";
   std::getline(std::cin, ciphertext);
 
-  std::cout << ciphertext << '\n';
+  std::vector<std::string> plaintexts = parse_dict1();
+  std::vector<std::string> plainwords = parse_dict2();
 
-  std::vector<std::string> plaintexts_dict = parse_dict1();
-  std::vector<std::string> plainwords_dict = parse_dict2();
-
-  std::vector<std::vector<float>> ent_trend_list;
-  ent_trend_list.reserve(plaintexts_dict.size());
-
-  for (auto it = plaintexts_dict.begin(); it != plaintexts_dict.end(); it++) {
-    std::cout << (it - plaintexts_dict.begin()) + 1 << '\n';
-    std::vector<float> ent_trend = entropy_trend(ciphertext, *it, 30, 12);
-    ent_trend_list.push_back(ent_trend);
-    for (auto ent : ent_trend) {
-      std::cout << ent << ' ';
-    }
-    std::cout << std::endl;
-  }
-
-  // auto min_entropy = std::min_element(entropies.begin(), entropies.end());
-  // auto min_i = min_entropy - entropies.begin();
-  // std::cout << min_i << std::endl;
-
-  // auto analysis = new CryptAnalysis(ciphertext, dict1, dict2);
-  // analysis->kasiski_analysis();
-  // analysis->report();
-  // analysis->entropy_analysis();
-  // analysis->crack();
-
-  // delete analysis;
+  auto entropy_analysis = new EntropyAnalysis(ciphertext, plaintexts);
+  entropy_analysis->run(40);
+  delete entropy_analysis;
 
   return 0;
 }
