@@ -23,8 +23,8 @@ class KasiskiAnalysis {
 
   ~KasiskiAnalysis();
 
-  // Run kasiski analysis and store the result internally
-  void run();
+  // Run kasiski analysis, and infer a proper key length
+  std::vector<std::size_t> run();
 };
 
 #endif  // KASISKI_H__

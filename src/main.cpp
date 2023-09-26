@@ -33,8 +33,17 @@ int main(int argc, char *argv[]) {
   std::vector<std::string> plaintexts = parse_dict1();
   std::vector<std::string> plainwords = parse_dict2();
 
+  auto kasiski_analysis = new KasiskiAnalysis(ciphertext);
+  auto factors = kasiski_analysis->run();
+  delete kasiski_analysis;
+
+  // for (auto f : factors) {
+  //   std::cout << f << ' ';
+  // }
+  // std::cout << std::endl;
+
   auto entropy_analysis = new EntropyAnalysis(ciphertext, plaintexts);
-  entropy_analysis->run(8);
+  entropy_analysis->run(factors[0] * 2);
   delete entropy_analysis;
 
   return 0;

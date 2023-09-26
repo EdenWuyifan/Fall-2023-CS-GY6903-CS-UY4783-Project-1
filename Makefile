@@ -15,7 +15,7 @@ OUTPUT = $(BUILD_DIR)/main
 
 .PHONY: all build enc clean
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CPP_FLAGS) $(INC_DIRS) -c $< -o $@
 
@@ -23,11 +23,11 @@ $(OUTPUT): $(OBJS)
 	$(CC) $(CPP_FLAGS) $(OBJS) -o $(OUTPUT)
 
 all: build
-	@cat resources/cipher_1 | ./build/main 1
-	@cat resources/cipher_2 | ./build/main 1
-	@cat resources/cipher_3 | ./build/main 1
-	@cat resources/cipher_4 | ./build/main 1
-	@cat resources/cipher_5 | ./build/main 1
+	@cat resources/cipher_1 | ./build/main 1 2> /dev/null
+	@cat resources/cipher_2 | ./build/main 1 2> /dev/null
+	@cat resources/cipher_3 | ./build/main 1 2> /dev/null
+	@cat resources/cipher_4 | ./build/main 1 2> /dev/null
+	@cat resources/cipher_5 | ./build/main 1 2> /dev/null
 
 build: $(OUTPUT)
 

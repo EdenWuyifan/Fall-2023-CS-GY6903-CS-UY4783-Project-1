@@ -35,7 +35,7 @@ std::set<std::size_t> KasiskiAnalysis::factorize(std::size_t n) {
   return factors;
 }
 
-void KasiskiAnalysis::run() {
+std::vector<std::size_t> KasiskiAnalysis::run() {
   std::map<std::string, std::vector<std::size_t>> repeated_strings;
   for (std::size_t t = 3; t <= 24; t++) {
     // std::cout << "analyzing for key length t=" << t << std::endl;
@@ -44,14 +44,9 @@ void KasiskiAnalysis::run() {
         break;
       }
       std::string substr = ciphertext.substr(i, t);
-      if (repeated_strings.count(substr)) {
-        // already analyzed this substr
-        break;
+      if (repeated_strings.count(substr) == 0) {
+        repeated_strings[substr] = find_all_occurrences(ciphertext, substr);
       }
-      std::vector<std::size_t> occurences =
-          find_all_occurrences(ciphertext, substr);
-
-      repeated_strings[substr] = occurences;
     }
   }
 
@@ -73,8 +68,6 @@ void KasiskiAnalysis::run() {
     }
   }
 
-  std::cout << "deltas done!\n";
-
   std::map<size_t, size_t> factor_counts;
 
   for (auto d : deltas) {
@@ -84,19 +77,30 @@ void KasiskiAnalysis::run() {
       if ((f < 2) || (f > 24)) {
         continue;
       }
-      if (factor_counts.count(f) == 0) {
-        factor_counts[f] = 0;
-      }
       factor_counts[f] += 1;
+    }
+  }
+
+  if (factor_counts.count(2) > 0) {
+    if (factor_counts.count(4) > 0) {
+      factor_counts[4] += factor_counts[2] / 2;
+      factor_counts.erase(2);
     }
   }
 
   factors.assign(factor_counts.begin(), factor_counts.end());
   std::sort(factors.begin(), factors.end(), sortByVal);
-  std::cout << "Factors collected...\n";
-  for (auto fc : factors) {
-    std::cout << fc.first << ':' << fc.second << std::endl;
+  // std::cout << "Factors collected...\n";
+  // for (auto fc : factors) {
+  //   std::cout << fc.first << ':' << fc.second << std::endl;
+  // }
+
+  // std::cout << "End of analysis\n";
+
+  std::vector<std::size_t> answer;
+  for (auto it = factors.begin(); it != factors.begin() + 3; it++) {
+    answer.push_back((*it).first);
   }
 
-  std::cout << "End of analysis\n";
+  return answer;
 }

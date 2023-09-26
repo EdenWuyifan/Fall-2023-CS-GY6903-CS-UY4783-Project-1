@@ -118,7 +118,7 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
       trend_sqr_sum / (float)diff_measures.size() - trend_avg * trend_avg;
   float trend_std = sqrtf32(trend_var);
 
-  std::cout << "avg=" << trend_avg << " std=" << trend_std << '\n';
+  std::cerr << "avg=" << trend_avg << " std=" << trend_std << '\n';
 
   if (trend_std < 2.5f) {
     std::cerr << "No general anomaly is detected\n";
