@@ -22,7 +22,7 @@ class EntropyAnalysis {
   std::vector<std::string> plaintexts;
   std::vector<Encoded> plain_streams;
 
-  std::vector<Encoded> diffs;  // shifts from cipher_stream to each plain_stream
+  std::vector<Encoded> measure_diffs(const Encoded &cipher_stream);
 
   float compute_entropy(const Counter &counter);
 
@@ -34,9 +34,22 @@ class EntropyAnalysis {
   std::optional<size_t> detect_trend_anomaly(
       std::vector<std::vector<float>> trends);
 
+  std::string char_removed_at(const std::string &s, size_t i) {
+    if (i >= s.size()) {
+      return s;
+    }
+    auto result = s.substr(0, i) + s.substr(i + 1);
+    return result;
+  }
+
+  std::string reduce_entropy(const std::string &ciphertext,
+                             std::size_t search_space);
+  std::optional<size_t> entropy_trend_analysis(const Encoded &cipher_stream,
+                                               std::size_t trend_start);
+
  public:
   EntropyAnalysis(std::string ciphertext, std::vector<std::string> plaintexts);
-  void run(int end);
+  void run(int start);
 };
 
 #endif  // ENTROPY_H__

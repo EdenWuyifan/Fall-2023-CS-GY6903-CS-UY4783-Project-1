@@ -1,5 +1,6 @@
 #include "entropy.h"
 
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <iostream>
@@ -15,6 +16,21 @@ Encoded encode(const std::string &text) {
   return encoded;
 }
 
+std::vector<Encoded> EntropyAnalysis::measure_diffs(
+    const Encoded &cipher_stream) {
+  std::vector<Encoded> diffs;
+  for (auto &&ps : this->plain_streams) {
+    std::vector<int> shift;
+    for (size_t i = 0; i < ps.size(); i++) {
+      int d = diff(cipher_stream[i], ps[i]);
+      shift.push_back(d);
+    }
+    diffs.push_back(shift);
+  }
+
+  return diffs;
+}
+
 EntropyAnalysis::EntropyAnalysis(std::string ciphertext,
                                  std::vector<std::string> plaintexts) {
   assert(plaintexts.size() == 5);
@@ -22,16 +38,10 @@ EntropyAnalysis::EntropyAnalysis(std::string ciphertext,
   this->plaintexts = plaintexts;
 
   this->cipher_stream = encode(this->ciphertext);
-  for (auto p : this->plaintexts) {
+
+  for (const auto &p : this->plaintexts) {
     std::vector<int> plain_stream = encode(p);
     this->plain_streams.push_back(plain_stream);
-
-    std::vector<int> shift;
-    for (size_t i = 0; i < plain_stream.size(); i++) {
-      int d = diff(cipher_stream[i], plain_stream[i]);
-      shift.push_back(d);
-    }
-    this->diffs.push_back(shift);
   }
 }
 
@@ -110,7 +120,7 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
 
   std::cout << "avg=" << trend_avg << " std=" << trend_std << '\n';
 
-  if (trend_std < 1.0f) {
+  if (trend_std < 2.5f) {
     std::cerr << "No general anomaly is detected\n";
     return std::nullopt;
   }
@@ -161,17 +171,69 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
   return std::optional<size_t>(most_frequent);
 }
 
-void EntropyAnalysis::run(int end) {
-  int i = 0;
-  std::vector<std::vector<float>> trends;
-  for (auto d : this->diffs) {
-    std::vector<float> trend =
-        compute_entropy_trend(d.begin(), d.begin() + 24, 8);
-    trends.push_back(trend);
+/// @brief Find a new ciphertext, which has a minimum entropy, with a character
+/// removed
+/// @param ciphertext
+/// @return a new ciphertext
+std::string EntropyAnalysis::reduce_entropy(const std::string &ciphertext,
+                                            std::size_t search_space) {
+  std::vector<float> min_ents;
+  min_ents.reserve(search_space);
+  for (std::size_t ci = 0; ci < search_space * 2; ci++) {
+    std::string new_ciphertext = char_removed_at(ciphertext, ci);
+    Encoded new_cipher_stream = encode(new_ciphertext);
+    std::vector<Encoded> new_diffs = measure_diffs(new_cipher_stream);
 
-    i++;
+    float ent_local_min = 1000.0f;
+    for (auto d : new_diffs) {
+      Counter cntr = make_counter(d.begin(), d.begin() + search_space);
+      float ent = compute_entropy(cntr);
+      if (ent < ent_local_min) {
+        ent_local_min = ent;
+      }
+    }
+    min_ents.push_back(ent_local_min);
   }
-  auto answer = detect_trend_anomaly(trends);
+
+  auto min_i = std::min_element(min_ents.begin(), min_ents.end());
+  auto i = min_i - min_ents.begin();
+
+  return char_removed_at(ciphertext, i);
+}
+
+std::optional<size_t> EntropyAnalysis::entropy_trend_analysis(
+    const Encoded &cipher_stream, std::size_t trend_start) {
+  std::vector<std::vector<float>> trends;
+  std::vector<Encoded> diffs = measure_diffs(cipher_stream);
+  for (auto d : diffs) {
+    std::vector<float> trend = compute_entropy_trend(
+        d.begin(), d.begin() + trend_start * 3, trend_start);
+    trends.push_back(trend);
+  }
+  return detect_trend_anomaly(trends);
+}
+
+void EntropyAnalysis::run(int start) {
+  std::vector<Encoded> diffs = measure_diffs(this->cipher_stream);
+  auto answer = entropy_trend_analysis(this->cipher_stream, start);
+  if (answer.has_value()) {
+    std::size_t anomaly = answer.value();
+    std::cout << "The ciphertext is encrypted from plaintext " << (anomaly + 1)
+              << std::endl;
+    return;
+  }
+
+  std::string new_ciphertext = reduce_entropy(this->ciphertext, start * 2);
+  answer = entropy_trend_analysis(encode(new_ciphertext), start);
+  if (answer.has_value()) {
+    std::size_t anomaly = answer.value();
+    std::cout << "The ciphertext is encrypted from plaintext " << (anomaly + 1)
+              << std::endl;
+    return;
+  }
+
+  new_ciphertext = reduce_entropy(new_ciphertext, start * 2);
+  answer = entropy_trend_analysis(encode(new_ciphertext), start);
   if (answer.has_value()) {
     std::size_t anomaly = answer.value();
     std::cout << "The ciphertext is encrypted from plaintext " << (anomaly + 1)

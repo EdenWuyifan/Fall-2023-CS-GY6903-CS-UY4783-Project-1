@@ -15,10 +15,7 @@ OUTPUT = $(BUILD_DIR)/main
 
 .PHONY: all build enc clean
 
-$(OBJ): main.cpp main.h Makefile
-	@$(CC) -o build/main main.cpp $(CPP_FLAGS)
-
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp $(INC_DIR)/%.h
 	@mkdir -p $(BUILD_DIR)
 	$(CC) $(CPP_FLAGS) $(INC_DIRS) -c $< -o $@
 

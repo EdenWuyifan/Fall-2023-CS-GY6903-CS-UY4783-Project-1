@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
   std::vector<std::string> plainwords = parse_dict2();
 
   auto entropy_analysis = new EntropyAnalysis(ciphertext, plaintexts);
-  entropy_analysis->run(40);
+  entropy_analysis->run(8);
   delete entropy_analysis;
 
   return 0;
