@@ -74,8 +74,8 @@ std::vector<float> EntropyAnalysis::compute_entropy_trend(
 
 std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
     std::vector<std::vector<float>> trends) {
-  std::vector<float> trend_diffs;
-  trend_diffs.reserve(trends.size() * (trends.size() - 1));
+  std::vector<float> diff_measures;
+  diff_measures.reserve(trends.size() * (trends.size() - 1));
   float trend_sum = 0.0f;
   float trend_sqr_sum = 0.0f;
 
@@ -89,7 +89,7 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
         trend_diff += (trend_i[k] - trend_j[k]) * (trend_i[k] - trend_j[k]);
       }
 
-      trend_diffs.push_back(trend_diff);
+      diff_measures.push_back(trend_diff);
       trend_sum += trend_diff;
       trend_sqr_sum += trend_diff * trend_diff;
 
@@ -98,9 +98,9 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
     }
   }
 
-  float trend_avg = trend_sum / (float)trend_diffs.size();
+  float trend_avg = trend_sum / (float)diff_measures.size();
   float trend_var =
-      trend_sqr_sum / (float)trend_diffs.size() - trend_avg * trend_avg;
+      trend_sqr_sum / (float)diff_measures.size() - trend_avg * trend_avg;
   float trend_std = sqrtf32(trend_var);
 
   std::cout << "avg=" << trend_avg << " var=" << sqrtf32(trend_var) << '\n';
@@ -125,5 +125,13 @@ void EntropyAnalysis::run(int end) {
 
     i++;
   }
-  auto x = detect_trend_anomaly(trends);
+  auto answer = detect_trend_anomaly(trends);
+  if (answer.has_value()) {
+    std::size_t anomaly = answer.value();
+    std::cout << anomaly << std::endl;
+    return;
+  }
+
+  std::cout << -1 << std::endl;
+  return;
 }

@@ -9,7 +9,52 @@
 #include "entropy.h"
 #include "kasiski.h"
 
-std::vector<std::string> parse_dict1() {
+static std::vector<std::string> parse_dict1();
+static std::vector<std::string> parse_dict2();
+
+int main(int argc, char *argv[]) {
+  std::string ciphertext;
+
+  if (argc < 2) {
+    std::cerr << "Usage: main <1|2>\n1 for test 1\n2 for test 2\n";
+    exit(2);
+  }
+
+  std::string test = argv[1];
+
+  if (test == "2") {
+    std::cerr << "Not implemented yet\n";
+    return 0;
+  }
+
+  auto combination = new Combination(3, 2);  // (0, 1), (0, 2), (1, 2)
+  std::optional<std::vector<std::size_t>> comb = combination->next();
+  while (comb.has_value()) {
+    auto comb_value = comb.value();
+
+    for (auto &&n : comb_value) {
+      std::cout << n << ' ';
+    }
+    std::cout << '\n';
+
+    comb = combination->next();
+  }
+  delete combination;
+
+  std::cout << "Input ciphertext:\n";
+  std::getline(std::cin, ciphertext);
+
+  std::vector<std::string> plaintexts = parse_dict1();
+  std::vector<std::string> plainwords = parse_dict2();
+
+  auto entropy_analysis = new EntropyAnalysis(ciphertext, plaintexts);
+  entropy_analysis->run(40);
+  delete entropy_analysis;
+
+  return 0;
+}
+
+static std::vector<std::string> parse_dict1() {
   std::string line;
   std::ifstream plain1("resources/plaintext1.txt");
   std::vector<std::string> dict1;
@@ -27,7 +72,7 @@ std::vector<std::string> parse_dict1() {
   return dict1;
 }
 
-std::vector<std::string> parse_dict2() {
+static std::vector<std::string> parse_dict2() {
   std::string line;
   std::ifstream plain2("resources/plaintext2.txt");
   std::vector<std::string> dict2;
@@ -41,46 +86,4 @@ std::vector<std::string> parse_dict2() {
   plain2.close();
 
   return dict2;
-}
-
-std::vector<int> compute_diff(const std::vector<int> &pcode,
-                              const std::vector<int> &ccode) {
-  std::vector<int> diff(ccode);
-
-  for (size_t i = 0; i < pcode.size(); i++) {
-    diff[i] -= pcode[i];
-  }
-  for (size_t i = pcode.size(); i < ccode.size(); i++) {
-    diff.pop_back();
-  }
-
-  return diff;
-}
-
-int main(int argc, char *argv[]) {
-  std::string ciphertext;
-
-  if (argc < 2) {
-    std::cerr << "Usage: main <1|2>\n1 for test 1\n2 for test 2\n";
-    exit(2);
-  }
-
-  std::string test = argv[1];
-
-  if (test == "2") {
-    std::cerr << "Not implemented yet\n";
-    return 0;
-  }
-
-  std::cout << "Input ciphertext:\n";
-  std::getline(std::cin, ciphertext);
-
-  std::vector<std::string> plaintexts = parse_dict1();
-  std::vector<std::string> plainwords = parse_dict2();
-
-  auto entropy_analysis = new EntropyAnalysis(ciphertext, plaintexts);
-  entropy_analysis->run(40);
-  delete entropy_analysis;
-
-  return 0;
 }

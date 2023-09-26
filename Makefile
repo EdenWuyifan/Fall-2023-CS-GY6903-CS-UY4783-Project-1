@@ -1,7 +1,7 @@
 CC=c++
 PYTHON=python
 ARGS=exampleestringexamplestring
-CPP_FLAGS = -std=c++17 -g -Wall -Wextra # -fsanitize=address -fsanitize=undefined
+CPP_FLAGS = -std=c++17 -g -Wall -Wextra -fsanitize=address -fsanitize=undefined
 
 SRC_DIR = src
 INC_DIR = include
