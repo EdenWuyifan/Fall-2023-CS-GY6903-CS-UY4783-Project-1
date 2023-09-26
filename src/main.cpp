@@ -27,20 +27,6 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  auto combination = new Combination(3, 2);  // (0, 1), (0, 2), (1, 2)
-  std::optional<std::vector<std::size_t>> comb = combination->next();
-  while (comb.has_value()) {
-    auto comb_value = comb.value();
-
-    for (auto &&n : comb_value) {
-      std::cout << n << ' ';
-    }
-    std::cout << '\n';
-
-    comb = combination->next();
-  }
-  delete combination;
-
   std::cout << "Input ciphertext:\n";
   std::getline(std::cin, ciphertext);
 

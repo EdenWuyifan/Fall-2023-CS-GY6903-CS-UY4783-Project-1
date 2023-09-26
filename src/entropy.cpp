@@ -3,6 +3,8 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include <memory>
+#include <unordered_map>
 
 Encoded encode(const std::string &text) {
   Encoded encoded;
@@ -79,23 +81,26 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
   float trend_sum = 0.0f;
   float trend_sqr_sum = 0.0f;
 
+  auto comb = std::make_unique<Combination>(trends.size(), 2);
+  auto it = comb->next();
+
   // measure the sum of differences squared for each pair of trends
-  for (auto i = trends.begin(); i != trends.end(); i++) {
-    for (auto j = i + 1; j != trends.end(); j++) {
-      std::vector<float> trend_i = *i;
-      std::vector<float> trend_j = *j;
-      float trend_diff = 0.0f;
-      for (size_t k = 0; k < trend_i.size(); k++) {
-        trend_diff += (trend_i[k] - trend_j[k]) * (trend_i[k] - trend_j[k]);
-      }
-
-      diff_measures.push_back(trend_diff);
-      trend_sum += trend_diff;
-      trend_sqr_sum += trend_diff * trend_diff;
-
-      // std::cout << (i - trends.begin()) << ' ' << (j - trends.begin()) << ' '
-      //           << trend_diff << '\n';
+  while (it.has_value()) {
+    std::vector<std::size_t> indicies = it.value();
+    assert(indicies.size() == 2);
+    std::size_t i = indicies[0];
+    std::size_t j = indicies[1];
+    std::vector<float> trend_i = trends[i];
+    std::vector<float> trend_j = trends[j];
+    float trend_diff = 0.0f;
+    for (size_t k = 0; k < trend_i.size(); k++) {
+      trend_diff += (trend_i[k] - trend_j[k]) * (trend_i[k] - trend_j[k]);
     }
+    diff_measures.push_back(trend_diff);
+    trend_sum += trend_diff;
+    trend_sqr_sum += trend_diff * trend_diff;
+
+    it = comb->next();
   }
 
   float trend_avg = trend_sum / (float)diff_measures.size();
@@ -103,9 +108,57 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
       trend_sqr_sum / (float)diff_measures.size() - trend_avg * trend_avg;
   float trend_std = sqrtf32(trend_var);
 
-  std::cout << "avg=" << trend_avg << " var=" << sqrtf32(trend_var) << '\n';
+  std::cout << "avg=" << trend_avg << " std=" << trend_std << '\n';
 
-  return std::optional<size_t>();
+  if (trend_std < 1.0f) {
+    std::cerr << "No general anomaly is detected\n";
+    return std::nullopt;
+  }
+
+  // collect anomaly indices
+  std::vector<std::size_t> anomaly_indices;
+  comb = std::make_unique<Combination>(trends.size(), 2);
+
+  assert(diff_measures.size() == comb->size());
+
+  for (auto diff = diff_measures.begin(); diff != diff_measures.end(); diff++) {
+    std::vector<std::size_t> indices = comb->next().value();
+    if (*diff > trend_avg + 0.25 * trend_std) {
+      anomaly_indices.insert(anomaly_indices.end(), indices.begin(),
+                             indices.end());
+    }
+  }
+
+  std::unordered_map<std::size_t, std::size_t>
+      ai_count;  // anomaly indices count
+
+  for (auto i : anomaly_indices) {
+    ai_count[i]++;
+  }
+
+  int most_frequent = -1;
+  std::size_t max_count = 0;
+  for (const auto &i_cnt : ai_count) {
+    if (i_cnt.second > max_count) {
+      max_count = i_cnt.second;
+      most_frequent = i_cnt.first;
+    }
+  }
+
+  // Is the most frequent index uninque?
+  int mf_count = 0;
+  for (const auto &i_cnt : ai_count) {
+    if (i_cnt.second == max_count) {
+      mf_count++;
+    }
+  }
+
+  if (mf_count != 1) {
+    std::cerr << "Most frequent index is not unique\n";
+    return std::nullopt;
+  }
+
+  return std::optional<size_t>(most_frequent);
 }
 
 void EntropyAnalysis::run(int end) {
@@ -116,22 +169,16 @@ void EntropyAnalysis::run(int end) {
         compute_entropy_trend(d.begin(), d.begin() + 24, 8);
     trends.push_back(trend);
 
-    // std::cout << (i + 1) << std::endl;
-    // std::cout << std::fixed << std::setprecision(3);
-    // for (auto ent : trend) {
-    //   std::cout << std::setw(5) << ent << ' ';
-    // }
-    // std::cout << '\n';
-
     i++;
   }
   auto answer = detect_trend_anomaly(trends);
   if (answer.has_value()) {
     std::size_t anomaly = answer.value();
-    std::cout << anomaly << std::endl;
+    std::cout << "The ciphertext is encrypted from plaintext " << (anomaly + 1)
+              << std::endl;
     return;
   }
 
-  std::cout << -1 << std::endl;
+  std::cout << "Cryptanalysis failed to find the plaintext\n";
   return;
 }

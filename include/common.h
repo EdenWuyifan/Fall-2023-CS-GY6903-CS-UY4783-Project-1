@@ -23,6 +23,8 @@ class Combination {
  public:
   Combination(std::size_t n, std::size_t k);
   std::optional<std::vector<std::size_t>> next();
+
+  std::size_t size() { return end; }
 };
 
 #endif  // COMMON_H__
