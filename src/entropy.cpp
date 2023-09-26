@@ -225,15 +225,15 @@ void EntropyAnalysis::run(int start) {
 
   std::string new_ciphertext = reduce_entropy(this->ciphertext, start * 2);
   answer = entropy_trend_analysis(encode(new_ciphertext), start);
-  if (answer.has_value()) {
-    std::size_t anomaly = answer.value();
-    std::cout << "The ciphertext is encrypted from plaintext " << (anomaly + 1)
-              << std::endl;
-    return;
+
+  for (int i = 0; i < start; i++) {
+    if (answer.has_value()) {
+      break;
+    }
+    new_ciphertext = reduce_entropy(new_ciphertext, start * 2);
+    answer = entropy_trend_analysis(encode(new_ciphertext), start);
   }
 
-  new_ciphertext = reduce_entropy(new_ciphertext, start * 2);
-  answer = entropy_trend_analysis(encode(new_ciphertext), start);
   if (answer.has_value()) {
     std::size_t anomaly = answer.value();
     std::cout << "The ciphertext is encrypted from plaintext " << (anomaly + 1)
