@@ -1,6 +1,8 @@
 #ifndef ENTROPY_H__
 #define ENTROPY_H__
 
+#include <iomanip>
+#include <iostream>
 #include <map>
 #include <optional>
 #include <string>
@@ -12,17 +14,19 @@ typedef std::vector<int> Encoded;
 
 Encoded encode(const std::string &text);
 
+void print_encoded(const Encoded &encoded, std::size_t to);
+
 typedef std::map<int, int> Counter;
 
 class EntropyAnalysis {
  private:
-  std::string ciphertext;
+  const std::string ciphertext;
   Encoded cipher_stream;
 
-  std::vector<std::string> plaintexts;
+  const std::vector<std::string> plaintexts;
   std::vector<Encoded> plain_streams;
 
-  std::size_t search_space;
+  const std::size_t search_space;
 
   std::vector<Encoded> measure_diffs(const Encoded &cipher_stream);
 

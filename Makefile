@@ -3,7 +3,7 @@ PYTHON=python
 ARGS=exampleestringexamplestring
 CPP_FLAGS = -std=c++17 -g -Wall -Wextra -fsanitize=address -fsanitize=undefined
 KEY_LEN=4
-EXPAND=2
+SEARCH_SPACE=24
 
 SRC_DIR = src
 INC_DIR = include
@@ -25,11 +25,12 @@ $(OUTPUT): $(OBJS)
 	$(CC) $(CPP_FLAGS) $(OBJS) -o $(OUTPUT)
 
 all: build
-	@cat resources/key_$(KEY_LEN)/cipher_1 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_1.out 2> results/$(KEY_LEN)_$(EXPAND)_1.err
-	@cat resources/key_$(KEY_LEN)/cipher_2 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_2.out 2> results/$(KEY_LEN)_$(EXPAND)_2.err
-	@cat resources/key_$(KEY_LEN)/cipher_3 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_3.out 2> results/$(KEY_LEN)_$(EXPAND)_3.err
-	@cat resources/key_$(KEY_LEN)/cipher_4 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_4.out 2> results/$(KEY_LEN)_$(EXPAND)_4.err
-	@cat resources/key_$(KEY_LEN)/cipher_5 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_5.out 2> results/$(KEY_LEN)_$(EXPAND)_5.err
+	@mkdir -p results/$(SEARCH_SPACE)
+	- @cat resources/key_$(KEY_LEN)/cipher_1 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_1.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_1.err
+	- @cat resources/key_$(KEY_LEN)/cipher_2 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_2.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_2.err
+	- @cat resources/key_$(KEY_LEN)/cipher_3 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_3.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_3.err
+	- @cat resources/key_$(KEY_LEN)/cipher_4 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_4.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_4.err
+	- @cat resources/key_$(KEY_LEN)/cipher_5 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_5.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_5.err
 
 build: $(OUTPUT)
 

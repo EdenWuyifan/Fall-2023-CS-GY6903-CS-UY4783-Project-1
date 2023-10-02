@@ -1,28 +1,26 @@
 # Read files under `results` directory
 # and calculate the accuracy
 
-
-
-# glob files under `results` directory
-
 import glob
 import os
 from collections import defaultdict
 from prettytable import PrettyTable
 
-files = glob.glob('results/*.out')
+files = glob.glob('results/*/*.out')
 
 # read files and calculate accuracy
-
 
 results = defaultdict(lambda: defaultdict(dict))
 
 for file in sorted(files):
     with open(file, 'r') as f:
+        expand = os.path.dirname(file).split('/')[-1]
         filename = os.path.basename(file).split('.')[0]
-        keylen, expand, correct = filename.split('_')
+        keylen, correct = filename.split('_')
         keylen = int(keylen)
         expand = int(expand)
+        if expand < 6:
+            continue
         answer = f.readlines()[-1].strip().split(' ')[-1]
         if answer == correct:
             results[expand][keylen][correct] = True
@@ -31,11 +29,11 @@ for file in sorted(files):
 
 
 for expand, result in results.items():
-    print('Expand factor', expand)
+    print('Search Space =', expand)
     table = PrettyTable()
     table.field_names = [
         'Key Length',
-        'Correct1', 'Correct2', 'Correct3', 'Correct4', 'Correct5',
+        'Cipher1', 'Cipher2', 'Cipher3', 'Cipher4', 'Cipher5',
         'Accuracy']
     for keylen, ox in result.items():
         row = [keylen] + [None] * 6

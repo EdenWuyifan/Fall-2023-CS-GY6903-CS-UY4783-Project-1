@@ -17,9 +17,10 @@ int main(int argc, char* argv[]) {
   std::string ciphertext;
 
   if (argc < 3) {
-    std::cout << "Usage: main <1|2> <expand_factor>\n";
+    std::cout << "Usage: main <1|2> <search_space> \n";
     std::cout << "1 for test 1, 2 for test 2\n";
-    std::cout << "expand_factor: how many times to expand the search space\n";
+    std::cout << "<search_space>: how many characters will be used for entropy "
+                 "analysis\n";
     exit(2);
   }
 
@@ -28,7 +29,7 @@ int main(int argc, char* argv[]) {
   // expand_factor is used to expand the search space
   // The expand_factor 1 means the initial search space is exactly the same as
   // the result of Kasiski analysis
-  int expand_factor = atoi(argv[2]);
+  int search_space = atoi(argv[2]);
 
   if (test == "2") {
     std::cerr << "Not implemented yet\n";
@@ -41,12 +42,12 @@ int main(int argc, char* argv[]) {
   std::vector<std::string> plaintexts = parse_dict1();
   std::vector<std::string> plainwords = parse_dict2();
 
-  auto kasiski_analysis = new KasiskiAnalysis(ciphertext);
-  auto factors = kasiski_analysis->run();
-  delete kasiski_analysis;
+  // auto kasiski_analysis = new KasiskiAnalysis(ciphertext);
+  // auto factors = kasiski_analysis->run();
+  // delete kasiski_analysis;
 
   auto entropy_analysis =
-      new EntropyAnalysis(ciphertext, plaintexts, factors[0] * expand_factor);
+      new EntropyAnalysis(ciphertext, plaintexts, search_space);
   auto answer = entropy_analysis->run();
   delete entropy_analysis;
 

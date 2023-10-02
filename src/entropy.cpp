@@ -16,12 +16,20 @@ Encoded encode(const std::string &text) {
   return encoded;
 }
 
+void print_encoded(const Encoded &encoded, std::size_t to) {
+  for (std::size_t i = 0; i < to; i++) {
+    std::cout << std::setw(2) << std::setfill('0') << encoded[i] << " ";
+  }
+  std::cout << '\n';
+}
+
 // Measure the difference from the given cipherstream and plainstreams
 std::vector<Encoded> EntropyAnalysis::measure_diffs(
     const Encoded &cipher_stream) {
   std::vector<Encoded> diffs;
   for (auto &&ps : this->plain_streams) {
     std::vector<int> shift;
+    assert(ps.size() <= cipher_stream.size());
     for (size_t i = 0; i < ps.size(); i++) {
       int d = diff(cipher_stream[i], ps[i]);
       shift.push_back(d);
@@ -34,18 +42,26 @@ std::vector<Encoded> EntropyAnalysis::measure_diffs(
 
 EntropyAnalysis::EntropyAnalysis(std::string ciphertext,
                                  std::vector<std::string> plaintexts,
-                                 std::size_t search_space) {
+                                 std::size_t search_space)
+    : ciphertext(ciphertext),
+      plaintexts(plaintexts),
+      search_space(search_space) {
   std::cerr << "Entropy Analysis\n";
   assert(plaintexts.size() == 5);
-  this->ciphertext = ciphertext;
-  this->plaintexts = plaintexts;
-  this->search_space = search_space;
 
   this->cipher_stream = encode(this->ciphertext);
 
+  for (std::size_t it = 0; it != search_space; it++) {
+    // print encoding number with width 2
+    std::cerr << std::setw(2) << std::setfill('0') << it << " ";
+  }
+  std::cerr << '\n';
+
+  print_encoded(cipher_stream, search_space);
   for (const auto &p : this->plaintexts) {
     std::vector<int> plain_stream = encode(p);
     this->plain_streams.push_back(plain_stream);
+    print_encoded(plain_stream, search_space);
   }
 }
 
@@ -199,6 +215,7 @@ std::string EntropyAnalysis::reduce_entropy(const std::string &ciphertext) {
     std::vector<Encoded> new_diffs = measure_diffs(new_cipher_stream);
 
     float ent_local_min = 1000.0f;
+    // WRONG: must fix a plainstream to decided which character to remove
     for (auto d : new_diffs) {
       const Counter cntr = make_counter(d.begin(), d.begin() + search_space);
       float ent = compute_entropy(cntr);
@@ -214,8 +231,8 @@ std::string EntropyAnalysis::reduce_entropy(const std::string &ciphertext) {
 
   std::string min_string = char_removed_at(ciphertext, i);
 
-  std::cerr << "min_string=" << min_string.substr(0, search_space) << " ("
-            << *min_i << ")\n";
+  std::cerr << "min_string=" << min_string.substr(0, search_space) << "... ("
+            << i << ")\n";
 
   return min_string;
 }
@@ -244,7 +261,9 @@ std::optional<std::size_t> EntropyAnalysis::run() {
   std::string new_ciphertext = reduce_entropy(this->ciphertext);
   answer = entropy_trend_analysis(encode(new_ciphertext), search_space);
 
-  for (std::size_t i = 0; i < search_space; i++) {
+  std::size_t expected_rand_char_num = (double)search_space * 0.05 * 2;
+
+  for (std::size_t i = 0; i < expected_rand_char_num; i++) {
     if (answer.has_value()) {
       return answer;
     }
