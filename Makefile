@@ -25,15 +25,11 @@ $(OUTPUT): $(OBJS)
 	$(CC) $(CPP_FLAGS) $(OBJS) -o $(OUTPUT)
 
 all: build
-	@cat resources/key_$(KEY_LEN)/cipher_1 | ./build/main 1 $(EXPAND)
-	@echo "-------------------"
-	@cat resources/key_$(KEY_LEN)/cipher_2 | ./build/main 1 $(EXPAND)
-	@echo "-------------------"
-	@cat resources/key_$(KEY_LEN)/cipher_3 | ./build/main 1 $(EXPAND)
-	@echo "-------------------"
-	@cat resources/key_$(KEY_LEN)/cipher_4 | ./build/main 1 $(EXPAND)
-	@echo "-------------------"
-	@cat resources/key_$(KEY_LEN)/cipher_5 | ./build/main 1 $(EXPAND)
+	@cat resources/key_$(KEY_LEN)/cipher_1 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_1.out 2> results/$(KEY_LEN)_$(EXPAND)_1.err
+	@cat resources/key_$(KEY_LEN)/cipher_2 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_2.out 2> results/$(KEY_LEN)_$(EXPAND)_2.err
+	@cat resources/key_$(KEY_LEN)/cipher_3 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_3.out 2> results/$(KEY_LEN)_$(EXPAND)_3.err
+	@cat resources/key_$(KEY_LEN)/cipher_4 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_4.out 2> results/$(KEY_LEN)_$(EXPAND)_4.err
+	@cat resources/key_$(KEY_LEN)/cipher_5 | ./build/main 1 $(EXPAND) > results/$(KEY_LEN)_$(EXPAND)_5.out 2> results/$(KEY_LEN)_$(EXPAND)_5.err
 
 build: $(OUTPUT)
 

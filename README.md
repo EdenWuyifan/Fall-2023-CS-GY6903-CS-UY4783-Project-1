@@ -1,10 +1,18 @@
 # General Usage
 
-The cryptanalysis program in written in C++, on the file `main.cpp`.
+The cryptanalysis program in written in C++.
+The project structure is as follows, each directory contains the following:
+
+- `src`: the C++ source code
+- `include`: the C++ header files
+- `examples`: example ciphertexts and keys
+- `build`: the compiled program
+- `resources`: the testing data
+
 You need to install `make` to execute the following commands:
 
-- `make run ARGS="ciphertext"` will run cryptanalysis on the given ciphertext
-- `make build` will build the cryptanalysis program at `build/main`
+- `make`: build the project
+- `make all EXPAND=3 KEY_LEN=4`: run cryptanalysis with expand factor 3 on test data encrypted using key length 4. There are test data of key length {4, 6, 8, 12, 17, 24}. The output will be under `results/` directory. You can refer to `results/{KEY_LEN}_{EXPAND}_{CORRECT_ANSWER}.{out, err}` file for the output and error message.
 
 # `enc.py`
 
