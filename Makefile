@@ -2,6 +2,8 @@ CC=c++
 PYTHON=python
 ARGS=exampleestringexamplestring
 CPP_FLAGS = -std=c++17 -g -Wall -Wextra -fsanitize=address -fsanitize=undefined
+KEY_LEN=4
+EXPAND=2
 
 SRC_DIR = src
 INC_DIR = include
@@ -23,11 +25,15 @@ $(OUTPUT): $(OBJS)
 	$(CC) $(CPP_FLAGS) $(OBJS) -o $(OUTPUT)
 
 all: build
-	@cat resources/cipher_1 | ./build/main 1 2> /dev/null
-	@cat resources/cipher_2 | ./build/main 1 2> /dev/null
-	@cat resources/cipher_3 | ./build/main 1 2> /dev/null
-	@cat resources/cipher_4 | ./build/main 1 2> /dev/null
-	@cat resources/cipher_5 | ./build/main 1 2> /dev/null
+	@cat resources/key_$(KEY_LEN)/cipher_1 | ./build/main 1 $(EXPAND)
+	@echo "-------------------"
+	@cat resources/key_$(KEY_LEN)/cipher_2 | ./build/main 1 $(EXPAND)
+	@echo "-------------------"
+	@cat resources/key_$(KEY_LEN)/cipher_3 | ./build/main 1 $(EXPAND)
+	@echo "-------------------"
+	@cat resources/key_$(KEY_LEN)/cipher_4 | ./build/main 1 $(EXPAND)
+	@echo "-------------------"
+	@cat resources/key_$(KEY_LEN)/cipher_5 | ./build/main 1 $(EXPAND)
 
 build: $(OUTPUT)
 

@@ -1,10 +1,13 @@
 #include "kasiski.h"
 
 #include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <map>
 
 #include "common.h"
+
+extern bool debug;
 
 KasiskiAnalysis::KasiskiAnalysis(std::string ciphertext)
     : ciphertext(ciphertext) {}
@@ -68,34 +71,39 @@ std::vector<std::size_t> KasiskiAnalysis::run() {
     }
   }
 
-  std::map<size_t, size_t> factor_counts;
+  std::map<size_t, double> factor_counts;
 
   for (auto d : deltas) {
     std::set<size_t> factors = factorize(d);
     for (auto f : factors) {
       // skip factors which are too small or too big
-      if ((f < 2) || (f > 24)) {
+      if ((f < 3) || (f > 24)) {
         continue;
       }
-      factor_counts[f] += 1;
+      factor_counts[f] += 1.0f;
     }
   }
 
-  if (factor_counts.count(2) > 0) {
-    if (factor_counts.count(4) > 0) {
-      factor_counts[4] += factor_counts[2] / 2;
-      factor_counts.erase(2);
+  for (auto fc : factor_counts) {
+    factor_counts[fc.first] = fc.second * (1.0f + log(fc.first - 2));
+  }
+
+  if (debug) {
+    for (auto fc : factor_counts) {
+      std::cout << "[DEBUG] " << fc.first << ":" << fc.second << "\n";
     }
   }
 
   factors.assign(factor_counts.begin(), factor_counts.end());
-  std::sort(factors.begin(), factors.end(), sortByVal);
-  // std::cout << "Factors collected...\n";
-  // for (auto fc : factors) {
-  //   std::cout << fc.first << ':' << fc.second << std::endl;
-  // }
 
-  // std::cout << "End of analysis\n";
+  std::sort(factors.begin(), factors.end(), sortByVal);
+  if (debug) {
+    std::cout << "[DEBUG] Factors collected...";
+    for (auto f : factors) {
+      std::cout << f.first << " ";
+    }
+    std::cout << std::endl;
+  }
 
   std::vector<std::size_t> answer;
   for (auto it = factors.begin(); it != factors.begin() + 3; it++) {

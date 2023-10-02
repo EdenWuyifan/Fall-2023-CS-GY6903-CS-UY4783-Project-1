@@ -14,7 +14,7 @@ class KasiskiAnalysis {
 
   /// @brief Factors of distances between repeated strings, as the result of
   /// Kasiski analysis. (factor => counts) mapping.
-  std::vector<std::pair<size_t, size_t>> factors;
+  std::vector<std::pair<size_t, double>> factors;
 
   std::set<std::size_t> factorize(std::size_t n);
 

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -9,18 +10,27 @@
 #include "entropy.h"
 #include "kasiski.h"
 
+bool debug = false;
+
 static std::vector<std::string> parse_dict1();
 static std::vector<std::string> parse_dict2();
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   std::string ciphertext;
 
-  if (argc < 2) {
-    std::cerr << "Usage: main <1|2>\n1 for test 1\n2 for test 2\n";
+  if (argc < 3) {
+    std::cout << "Usage: main <1|2> <expand_factor>\n";
+    std::cout << "1 for test 1, 2 for test 2\n";
+    std::cout << "expand_factor: how many times to expand the search space\n";
     exit(2);
   }
 
   std::string test = argv[1];
+
+  // expand_factor is used to expand the search space
+  // The expand_factor 1 means the initial search space is exactly the same as
+  // the result of Kasiski analysis
+  int expand_factor = atoi(argv[2]);
 
   if (test == "2") {
     std::cerr << "Not implemented yet\n";
@@ -30,6 +40,11 @@ int main(int argc, char *argv[]) {
   std::cout << "Input ciphertext:\n";
   std::getline(std::cin, ciphertext);
 
+  const char* debug_env = std::getenv("DEBUG");
+  if ((debug_env != NULL) && (debug_env[0] == '1')) {
+    debug = true;
+  }
+
   std::vector<std::string> plaintexts = parse_dict1();
   std::vector<std::string> plainwords = parse_dict2();
 
@@ -37,15 +52,19 @@ int main(int argc, char *argv[]) {
   auto factors = kasiski_analysis->run();
   delete kasiski_analysis;
 
-  // for (auto f : factors) {
-  //   std::cout << f << ' ';
-  // }
-  // std::cout << std::endl;
-
-  auto entropy_analysis = new EntropyAnalysis(ciphertext, plaintexts);
-  entropy_analysis->run(factors[0] * 2);
+  auto entropy_analysis =
+      new EntropyAnalysis(ciphertext, plaintexts, factors[0] * expand_factor);
+  auto answer = entropy_analysis->run();
   delete entropy_analysis;
 
+  if (answer.has_value()) {
+    std::size_t anomaly = answer.value();
+    std::cout << "The ciphertext is encrypted from plaintext " << (anomaly + 1)
+              << std::endl;
+    return 0;
+  }
+
+  std::cout << "Cryptanalysis failed to find the plaintext\n";
   return 0;
 }
 
