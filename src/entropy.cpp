@@ -7,8 +7,6 @@
 #include <memory>
 #include <unordered_map>
 
-extern bool debug;
-
 Encoded encode(const std::string &text) {
   Encoded encoded;
   encoded.reserve(text.length());
@@ -37,6 +35,7 @@ std::vector<Encoded> EntropyAnalysis::measure_diffs(
 EntropyAnalysis::EntropyAnalysis(std::string ciphertext,
                                  std::vector<std::string> plaintexts,
                                  std::size_t search_space) {
+  std::cerr << "Entropy Analysis\n";
   assert(plaintexts.size() == 5);
   this->ciphertext = ciphertext;
   this->plaintexts = plaintexts;
@@ -140,10 +139,8 @@ std::optional<size_t> EntropyAnalysis::detect_trend_anomaly(
   for (auto diff = diff_measures.begin(); diff != diff_measures.end(); diff++) {
     std::vector<std::size_t> indices = comb->next().value();
     if (*diff > trend_avg + 0.25 * trend_std) {
-      if (debug) {
-        std::cout << "Anomaly detected: " << indices[0] << " " << indices[1]
-                  << " " << *diff << std::endl;
-      }
+      std::cerr << "Anomaly detected: " << indices[0] << " " << indices[1]
+                << " " << *diff << std::endl;
       anomaly_indices.insert(anomaly_indices.end(), indices.begin(),
                              indices.end());
     }

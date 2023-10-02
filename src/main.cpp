@@ -10,8 +10,6 @@
 #include "entropy.h"
 #include "kasiski.h"
 
-bool debug = false;
-
 static std::vector<std::string> parse_dict1();
 static std::vector<std::string> parse_dict2();
 
@@ -39,11 +37,6 @@ int main(int argc, char* argv[]) {
 
   std::cout << "Input ciphertext:\n";
   std::getline(std::cin, ciphertext);
-
-  const char* debug_env = std::getenv("DEBUG");
-  if ((debug_env != NULL) && (debug_env[0] == '1')) {
-    debug = true;
-  }
 
   std::vector<std::string> plaintexts = parse_dict1();
   std::vector<std::string> plainwords = parse_dict2();

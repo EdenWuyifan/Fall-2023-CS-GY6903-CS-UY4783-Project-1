@@ -7,10 +7,10 @@
 
 #include "common.h"
 
-extern bool debug;
-
 KasiskiAnalysis::KasiskiAnalysis(std::string ciphertext)
-    : ciphertext(ciphertext) {}
+    : ciphertext(ciphertext) {
+  std::cerr << "Kasiski Analysis\n";
+}
 
 KasiskiAnalysis::~KasiskiAnalysis() {}
 
@@ -88,22 +88,18 @@ std::vector<std::size_t> KasiskiAnalysis::run() {
     factor_counts[fc.first] = fc.second * (1.0f + log(fc.first - 2));
   }
 
-  if (debug) {
-    for (auto fc : factor_counts) {
-      std::cout << "[DEBUG] " << fc.first << ":" << fc.second << "\n";
-    }
+  for (auto fc : factor_counts) {
+    std::cerr << "[DEBUG] " << fc.first << ":" << fc.second << "\n";
   }
 
   factors.assign(factor_counts.begin(), factor_counts.end());
 
   std::sort(factors.begin(), factors.end(), sortByVal);
-  if (debug) {
-    std::cout << "[DEBUG] Factors collected...";
-    for (auto f : factors) {
-      std::cout << f.first << " ";
-    }
-    std::cout << std::endl;
+  std::cerr << "[DEBUG] Factors collected...";
+  for (auto f : factors) {
+    std::cerr << f.first << " ";
   }
+  std::cerr << std::endl;
 
   std::vector<std::size_t> answer;
   for (auto it = factors.begin(); it != factors.begin() + 3; it++) {

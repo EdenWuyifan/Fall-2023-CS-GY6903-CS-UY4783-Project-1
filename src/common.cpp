@@ -22,8 +22,8 @@ int ctoi(char c) {
   return (c - 'a' + 1);
 }
 
-bool sortByVal(const std::pair<std::size_t, std::size_t> &a,
-               const std::pair<std::size_t, std::size_t> &b) {
+bool sortByVal(const std::pair<std::size_t, double> &a,
+               const std::pair<std::size_t, double> &b) {
   return (a.second > b.second);
 }
 
