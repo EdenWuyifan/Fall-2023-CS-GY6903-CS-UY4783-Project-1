@@ -73,7 +73,7 @@ def main():
     print(f"{len(rand_idx)=} {rand_idx}")
     print(f"{cipher=}")
 
-    with open(f'resources/cipher_{i+1}', 'w') as f:
+    with open(f'resources/key_{len(key)}/cipher_{i+1}', 'w') as f:
       f.write(cipher)
 
 
