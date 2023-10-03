@@ -4,6 +4,7 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -17,6 +18,22 @@ Encoded encode(const std::string &text);
 void print_encoded(const Encoded &encoded, std::size_t to);
 
 typedef std::map<int, int> Counter;
+
+class TrendsComparison {
+ private:
+  const std::vector<std::vector<float>> trends;
+
+  std::vector<float> diff_measures;
+
+  float avg;
+  float std_dev;
+
+ public:
+  TrendsComparison(std::vector<std::vector<float>> trends);
+  std::optional<size_t> detect_anomaly();
+
+  float get_std_dev() { return std_dev; }
+};
 
 class EntropyAnalysis {
  private:
@@ -37,14 +54,13 @@ class EntropyAnalysis {
   std::vector<float> compute_entropy_trend(Encoded::iterator begin,
                                            Encoded::iterator end, int start);
 
-  std::optional<size_t> detect_trend_anomaly(
-      std::vector<std::vector<float>> trends);
-
   std::string char_removed_at(const std::string &s, size_t i);
 
-  std::string reduce_entropy(const std::string &ciphertext);
-  std::optional<size_t> entropy_trend_analysis(const Encoded &cipher_stream,
-                                               std::size_t trend_start);
+  std::pair<float, std::string> optimize_entropy_for(
+      const std::string &plaintext);
+
+  std::shared_ptr<TrendsComparison> entropy_trend_analysis(
+      const Encoded &cipher_stream, std::size_t trend_start);
 
  public:
   EntropyAnalysis(std::string ciphertext, std::vector<std::string> plaintexts,
