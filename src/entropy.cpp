@@ -114,8 +114,9 @@ std::vector<float> EntropyAnalysis::compute_entropy_trend(
   return trend;
 }
 
-TrendsComparison::TrendsComparison(std::vector<std::vector<float>> trends)
-    : trends(trends) {
+TrendsComparison::TrendsComparison(std::vector<std::vector<float>> trends,
+                                   float std_dev_threshold = 2.0f)
+    : trends(trends), std_dev_threshold(std_dev_threshold) {
   diff_measures.reserve(trends.size() * (trends.size() - 1));
   float trend_sum = 0.0f;
   float trend_sqr_sum = 0.0f;
@@ -150,13 +151,13 @@ TrendsComparison::TrendsComparison(std::vector<std::vector<float>> trends)
 
   this->avg = trend_avg;
   this->std_dev = trend_std;
+  std::cerr << "[*] avg=" << trend_avg << " std_dev=" << trend_std << std::endl;
 }
 
 std::optional<size_t> TrendsComparison::detect_anomaly() {
   std::cerr << "[*] Detecting anomaly...\n";
-  if (this->std_dev < 2.0f) {
-    std::cerr << "[*] standard deviation is too small (" << this->std_dev
-              << ")\n";
+  if (this->std_dev < this->std_dev_threshold) {
+    std::cerr << "[*] std_dev is too small\n";
     return std::nullopt;
   }
 
@@ -215,7 +216,7 @@ std::string EntropyAnalysis::char_removed_at(const std::string &s, size_t i) {
   return result;
 }
 
-std::pair<float, std::string> EntropyAnalysis::optimize_entropy_for(
+std::string EntropyAnalysis::optimize_entropy_for(
     const std::string &plaintext) {
   const Encoded plain_stream = encode(plaintext);
   std::size_t num_trials = (double)search_space * 0.05 + 1;
@@ -228,34 +229,42 @@ std::pair<float, std::string> EntropyAnalysis::optimize_entropy_for(
   float start_ent = compute_entropy(
       make_counter(orig_diff.begin(), orig_diff.begin() + search_space));
 
-  std::cerr << "start_ent=" << start_ent << "\n";
+  std::cerr << "[*] Optimizing a ciphertext with entropy " << start_ent << "\n";
+
+  size_t expected_randoms = 0.05 * search_space;
+  std::cerr << "[*] Expected number of random characters: " << expected_randoms
+            << "\n";
 
   // First, try to remove a single character from the ciphertext
   float prev_ent = start_ent;
   std::size_t min_ci = 0;
-  for (std::size_t ci = 0; ci < search_space / 2; ci++) {
-    std::string trial_ciphertext = char_removed_at(this->ciphertext, ci);
-    Encoded new_cipher_stream = encode(trial_ciphertext);
-    Encoded new_diff = diff_encoded(new_cipher_stream, plain_stream);
-    Counter cntr =
-        make_counter(new_diff.begin(), new_diff.begin() + search_space / 2);
-    float ent = compute_entropy(cntr);
 
-    if (ent > prev_ent) {
-      // min_ent = ent;
-      min_ci = ci - 1;
-      break;
+  std::string new_cipher = this->ciphertext;
+  std::size_t cursor = 0;
+
+  for (std::size_t n_removed = 0; n_removed < expected_randoms; n_removed++) {
+    for (std::size_t ci = cursor; ci < search_space / 2; ci++) {
+      std::string test_cipher = char_removed_at(new_cipher, ci);
+      Encoded new_cipher_stream = encode(test_cipher);
+      Encoded new_diff = diff_encoded(new_cipher_stream, plain_stream);
+      Counter cntr =
+          make_counter(new_diff.begin(), new_diff.begin() + search_space / 2);
+      float ent = compute_entropy(cntr);
+
+      if (ent > prev_ent) {
+        min_ci = ci - 1;
+        break;
+      }
+
+      std::cerr << "- " << ci << ' ' << std::setprecision(10) << ent << '\n';
+      prev_ent = ent;
     }
-
-    std::cerr << ci << ' ' << std::setprecision(10) << ent << '\n';
-    prev_ent = ent;
+    std::cerr << "min_ent=" << prev_ent << " min_ci=" << min_ci << "\n";
+    cursor = min_ci + 1;
+    new_cipher = char_removed_at(new_cipher, min_ci);
   }
 
-  std::string reduced_ciphertext = char_removed_at(this->ciphertext, min_ci);
-
-  std::cerr << "min_ent=" << prev_ent << " min_ci=" << min_ci << "\n";
-
-  return std::make_pair(min_ci, reduced_ciphertext);
+  return new_cipher;
 }
 
 std::shared_ptr<TrendsComparison> EntropyAnalysis::entropy_trend_analysis(
@@ -282,18 +291,21 @@ std::optional<std::size_t> EntropyAnalysis::run() {
 
   // If the entropy difference is not significant, try to reduce the entropy
   // by removing a single character.
-  std::vector<std::pair<float, std::string>> opt_results;
+  std::vector<std::string> optimized_ciphers;
   for (std::size_t pi = 0; pi < 5; pi++) {
     std::cerr << "------------------------\n";
     std::cerr << (pi + 1) << "-th plaintext\n";
-    std::pair<float, std::string> opt = optimize_entropy_for(plaintexts[pi]);
-    opt_results.push_back(opt);
+    std::string opt_cipher = optimize_entropy_for(plaintexts[pi]);
+    optimized_ciphers.push_back(opt_cipher);
   }
 
   std::vector<float> std_devs;
-  for (auto it = opt_results.begin(); it != opt_results.end(); it++) {
-    std::cerr << (it - opt_results.begin()) << "th optimized ciphertext\n";
-    auto tc = entropy_trend_analysis(encode((*it).second), search_space);
+  for (auto it = optimized_ciphers.begin(); it != optimized_ciphers.end();
+       it++) {
+    std::cerr << "[*] Trend anomaly test with "
+              << (it - optimized_ciphers.begin() + 1)
+              << "th optimized ciphertext\n";
+    auto tc = entropy_trend_analysis(encode((*it)), search_space / 2);
     auto anomaly = tc->detect_anomaly();
     if (anomaly.has_value()) {
       return anomaly;
@@ -302,6 +314,7 @@ std::optional<std::size_t> EntropyAnalysis::run() {
     }
   }
 
+  std::cerr << "[*] Answering with the ciphertext with the largest std dev\n";
   auto max_std = std::max_element(std_devs.begin(), std_devs.end());
   auto max_std_i = max_std - std_devs.begin();
 

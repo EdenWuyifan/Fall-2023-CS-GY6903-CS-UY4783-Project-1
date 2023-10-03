@@ -28,8 +28,11 @@ class TrendsComparison {
   float avg;
   float std_dev;
 
+  float std_dev_threshold;
+
  public:
-  TrendsComparison(std::vector<std::vector<float>> trends);
+  TrendsComparison(std::vector<std::vector<float>> trends,
+                   float std_dev_threshold);
   std::optional<size_t> detect_anomaly();
 
   float get_std_dev() { return std_dev; }
@@ -56,8 +59,7 @@ class EntropyAnalysis {
 
   std::string char_removed_at(const std::string &s, size_t i);
 
-  std::pair<float, std::string> optimize_entropy_for(
-      const std::string &plaintext);
+  std::string optimize_entropy_for(const std::string &plaintext);
 
   std::shared_ptr<TrendsComparison> entropy_trend_analysis(
       const Encoded &cipher_stream, std::size_t trend_start);
