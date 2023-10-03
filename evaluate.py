@@ -28,7 +28,7 @@ for file in sorted(files):
             results[expand][keylen][correct] = False
 
 
-for expand, result in results.items():
+for expand, result in sorted(results.items(), key=lambda x: x[0]):
     print('Search Space =', expand)
     table = PrettyTable()
     acc_sum = 0.0
@@ -36,7 +36,7 @@ for expand, result in results.items():
         'Key Length',
         'Cipher1', 'Cipher2', 'Cipher3', 'Cipher4', 'Cipher5',
         'Accuracy']
-    for keylen, ox in result.items():
+    for keylen, ox in sorted(result.items(), key=lambda x: x[0]):
         row = [keylen] + [None] * 6
         for i, (correct, is_correct) in enumerate(ox.items(), 1):
             row[i] = 'O' if is_correct else 'X'
