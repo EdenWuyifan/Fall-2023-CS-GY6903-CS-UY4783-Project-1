@@ -169,10 +169,19 @@ std::optional<size_t> TrendsComparison::detect_anomaly() {
   for (auto diff = diff_measures.begin(); diff != diff_measures.end(); diff++) {
     std::vector<std::size_t> indices = comb_iterator->next().value();
     if (*diff > this->avg + 0.25 * this->std_dev) {
+      std::size_t i = indices[0];
+      std::size_t j = indices[1];
+      float trend_L1_diff = 0.0f;
+      for (size_t k = 0; k < trends[i].size(); k++) {
+        trend_L1_diff += trends[i][k] - trends[j][k];
+      }
       std::cerr << "Anomaly detected: " << indices[0] << " " << indices[1]
                 << " " << *diff << std::endl;
-      anomaly_indices.insert(anomaly_indices.end(), indices.begin(),
-                             indices.end());
+      if (trend_L1_diff > 0.0f) {
+        anomaly_indices.push_back(j);
+      } else {
+        anomaly_indices.push_back(i);
+      }
     }
   }
 
