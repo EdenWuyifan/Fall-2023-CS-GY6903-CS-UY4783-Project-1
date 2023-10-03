@@ -5,7 +5,7 @@ CPP_FLAGS = -std=c++17 -g -Wall -Wextra -fsanitize=address -fsanitize=undefined
 KEY_LEN=4
 SEARCH_SPACE=48
 
-KEY_LENS = 4 6 8 12 17 24
+KEY_LENS = 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 
 SRC_DIR = src
 INC_DIR = include
@@ -35,7 +35,7 @@ all: build
 	- @cat resources/key_$(KEY_LEN)/cipher_5 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_5.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_5.err
 
 test: build
-	@$(foreach key_len,$(KEY_LENS), $(MAKE) SEARCH_SPACE=$(SEARCH_SPACE) KEY_LEN=$(key_len) all;)
+	@$(foreach key_len,$(KEY_LENS),$(MAKE) SEARCH_SPACE=$(SEARCH_SPACE) KEY_LEN=$(key_len) all;)
 	@python evaluate.py
 
 build: $(OUTPUT)

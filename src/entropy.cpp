@@ -217,7 +217,7 @@ std::string EntropyAnalysis::char_removed_at(const std::string &s, size_t i) {
 }
 
 std::string EntropyAnalysis::optimize_entropy_for(
-    const std::string &plaintext) {
+    const std::string &plaintext, std::size_t expected_randoms) {
   const Encoded plain_stream = encode(plaintext);
   std::size_t num_trials = (double)search_space * 0.05 + 1;
   std::vector<std::size_t> removed_indices;
@@ -231,32 +231,33 @@ std::string EntropyAnalysis::optimize_entropy_for(
 
   std::cerr << "[*] Optimizing a ciphertext with entropy " << start_ent << "\n";
 
-  size_t expected_randoms = 0.05 * search_space;
   std::cerr << "[*] Expected number of random characters: " << expected_randoms
             << "\n";
 
   // First, try to remove a single character from the ciphertext
-  float prev_ent = start_ent;
+  float prev_ent = 1000.0f;
   std::size_t min_ci = 0;
 
   std::string new_cipher = this->ciphertext;
   std::size_t cursor = 0;
 
   for (std::size_t n_removed = 0; n_removed < expected_randoms; n_removed++) {
-    for (std::size_t ci = cursor; ci < search_space / 2; ci++) {
+    for (std::size_t ci = cursor; ci < search_space; ci++) {
       std::string test_cipher = char_removed_at(new_cipher, ci);
       Encoded new_cipher_stream = encode(test_cipher);
       Encoded new_diff = diff_encoded(new_cipher_stream, plain_stream);
       Counter cntr =
-          make_counter(new_diff.begin(), new_diff.begin() + search_space / 2);
+          make_counter(new_diff.begin(), new_diff.begin() + search_space);
       float ent = compute_entropy(cntr);
+
+      std::cerr << "- " << ci << ' ' << std::setprecision(10) << ent << '\n';
 
       if (ent > prev_ent) {
         min_ci = ci - 1;
+        prev_ent = ent;
         break;
       }
 
-      std::cerr << "- " << ci << ' ' << std::setprecision(10) << ent << '\n';
       prev_ent = ent;
     }
     std::cerr << "min_ent=" << prev_ent << " min_ci=" << min_ci << "\n";
@@ -289,23 +290,33 @@ std::optional<std::size_t> EntropyAnalysis::run() {
     return answer;
   }
 
+  std::vector<std::string> optimized_ciphers;
+  std::vector<float> std_devs;
+
   // If the entropy difference is not significant, try to reduce the entropy
   // by removing a single character.
-  std::vector<std::string> optimized_ciphers;
-  for (std::size_t pi = 0; pi < 5; pi++) {
-    std::cerr << "------------------------\n";
-    std::cerr << (pi + 1) << "-th plaintext\n";
-    std::string opt_cipher = optimize_entropy_for(plaintexts[pi]);
-    optimized_ciphers.push_back(opt_cipher);
+  for (std::size_t n_random = 1; n_random <= search_space * 0.05 * 2;
+       n_random++) {
+    for (std::size_t pi = 0; pi < 5; pi++) {
+      std::cerr << "------------------------\n";
+      std::cerr << (pi + 1) << "-th plaintext\n";
+      std::string opt_cipher = optimize_entropy_for(plaintexts[pi], n_random);
+      auto tc = entropy_trend_analysis(encode(opt_cipher), search_space);
+      auto anomaly = tc->detect_anomaly();
+      if (anomaly.has_value()) {
+        return anomaly;
+      }
+      std_devs.push_back(tc->get_std_dev());
+      optimized_ciphers.push_back(opt_cipher);
+    }
   }
 
-  std::vector<float> std_devs;
   for (auto it = optimized_ciphers.begin(); it != optimized_ciphers.end();
        it++) {
     std::cerr << "[*] Trend anomaly test with "
-              << (it - optimized_ciphers.begin() + 1)
+              << (it - optimized_ciphers.begin()) % 5
               << "th optimized ciphertext\n";
-    auto tc = entropy_trend_analysis(encode((*it)), search_space / 2);
+    auto tc = entropy_trend_analysis(encode((*it)), search_space);
     auto anomaly = tc->detect_anomaly();
     if (anomaly.has_value()) {
       return anomaly;
@@ -318,5 +329,5 @@ std::optional<std::size_t> EntropyAnalysis::run() {
   auto max_std = std::max_element(std_devs.begin(), std_devs.end());
   auto max_std_i = max_std - std_devs.begin();
 
-  return std::make_optional(max_std_i);
+  return std::make_optional(max_std_i % 5);
 }

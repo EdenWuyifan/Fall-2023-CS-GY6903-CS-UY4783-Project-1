@@ -31,6 +31,7 @@ for file in sorted(files):
 for expand, result in results.items():
     print('Search Space =', expand)
     table = PrettyTable()
+    acc_sum = 0.0
     table.field_names = [
         'Key Length',
         'Cipher1', 'Cipher2', 'Cipher3', 'Cipher4', 'Cipher5',
@@ -40,7 +41,9 @@ for expand, result in results.items():
         for i, (correct, is_correct) in enumerate(ox.items(), 1):
             row[i] = 'O' if is_correct else 'X'
         accuracy = len([x for x in ox.values() if x]) / 5
+        acc_sum += accuracy
         row[-1] = str(accuracy * 100) + '%'
         table.add_row(row)
+    table.add_row(['Average'] + [''] * 5 + [f'{acc_sum / len(result) * 100:.1f}%'])
     print(table)
 

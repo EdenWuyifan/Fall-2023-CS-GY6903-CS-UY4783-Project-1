@@ -59,7 +59,8 @@ class EntropyAnalysis {
 
   std::string char_removed_at(const std::string &s, size_t i);
 
-  std::string optimize_entropy_for(const std::string &plaintext);
+  std::string optimize_entropy_for(const std::string &plaintext,
+                                   std::size_t expected_randoms);
 
   std::shared_ptr<TrendsComparison> entropy_trend_analysis(
       const Encoded &cipher_stream, std::size_t trend_start);
