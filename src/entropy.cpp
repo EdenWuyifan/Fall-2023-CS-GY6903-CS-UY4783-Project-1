@@ -115,7 +115,7 @@ std::vector<float> EntropyAnalysis::compute_entropy_trend(
 }
 
 TrendsComparison::TrendsComparison(std::vector<std::vector<float>> trends,
-                                   float std_dev_threshold = 2.0f)
+                                   float std_dev_threshold = 0.9f)
     : trends(trends), std_dev_threshold(std_dev_threshold) {
   diff_measures.reserve(trends.size() * (trends.size() - 1));
   float trend_sum = 0.0f;
@@ -124,7 +124,6 @@ TrendsComparison::TrendsComparison(std::vector<std::vector<float>> trends,
   auto comb_iterator = std::make_unique<Combination>(trends.size(), 2);
   auto combination = comb_iterator->next();
 
-  std::cerr << "[*] Measuring trend difference...\n";
   while (combination.has_value()) {
     std::vector<std::size_t> indicies = combination.value();
     assert(indicies.size() == 2);
@@ -136,7 +135,7 @@ TrendsComparison::TrendsComparison(std::vector<std::vector<float>> trends,
     for (size_t k = 0; k < trend_i.size(); k++) {
       trend_diff += (trend_i[k] - trend_j[k]) * (trend_i[k] - trend_j[k]);
     }
-    std::cerr << "- " << i << " " << j << " " << trend_diff << std::endl;
+    // std::cerr << "- " << i << " " << j << " " << trend_diff << std::endl;
     diff_measures.push_back(trend_diff);
     trend_sum += trend_diff;
     trend_sqr_sum += trend_diff * trend_diff;
@@ -151,13 +150,13 @@ TrendsComparison::TrendsComparison(std::vector<std::vector<float>> trends,
 
   this->avg = trend_avg;
   this->std_dev = trend_std;
-  std::cerr << "[*] avg=" << trend_avg << " std_dev=" << trend_std << std::endl;
+  std::cerr << "[TRND] Trend Difference: avg=" << trend_avg
+            << " std_dev=" << trend_std << std::endl;
 }
 
 std::optional<size_t> TrendsComparison::detect_anomaly() {
-  std::cerr << "[*] Detecting anomaly...\n";
   if (this->std_dev < this->std_dev_threshold) {
-    std::cerr << "[*] std_dev is too small\n";
+    std::cerr << "[ANOM] Anomaly detection failed: std_dev is too small\n";
     return std::nullopt;
   }
 
@@ -175,8 +174,8 @@ std::optional<size_t> TrendsComparison::detect_anomaly() {
       for (size_t k = 0; k < trends[i].size(); k++) {
         trend_L1_diff += trends[i][k] - trends[j][k];
       }
-      std::cerr << "Anomaly detected: " << indices[0] << " " << indices[1]
-                << " " << *diff << std::endl;
+      std::cerr << "[ANOM] Anomaly detected: " << indices[0] << " "
+                << indices[1] << " " << *diff << std::endl;
       if (trend_L1_diff > 0.0f) {
         anomaly_indices.push_back(j);
       } else {
@@ -210,7 +209,7 @@ std::optional<size_t> TrendsComparison::detect_anomaly() {
   }
 
   if (mf_count != 1) {
-    std::cerr << "Most frequent index is not unique\n";
+    std::cerr << "[ANOM] Most frequent index is not unique\n";
     return std::nullopt;
   }
 
@@ -228,19 +227,12 @@ std::string EntropyAnalysis::char_removed_at(const std::string &s, size_t i) {
 std::string EntropyAnalysis::optimize_entropy_for(
     const std::string &plaintext, std::size_t expected_randoms) {
   const Encoded plain_stream = encode(plaintext);
-  std::size_t num_trials = (double)search_space * 0.05 + 1;
-  std::vector<std::size_t> removed_indices;
-  std::vector<float> min_ents;
-  std::vector<std::string> min_ciphers;
-  min_ents.reserve(num_trials);
 
   Encoded orig_diff = diff_encoded(this->cipher_stream, plain_stream);
   float start_ent = compute_entropy(
       make_counter(orig_diff.begin(), orig_diff.begin() + search_space));
 
-  std::cerr << "[*] Optimizing a ciphertext with entropy " << start_ent << "\n";
-
-  std::cerr << "[*] Expected number of random characters: " << expected_randoms
+  std::cerr << "[OPT] Optimizing a ciphertext with entropy " << start_ent
             << "\n";
 
   // First, try to remove a single character from the ciphertext
@@ -259,7 +251,8 @@ std::string EntropyAnalysis::optimize_entropy_for(
           make_counter(new_diff.begin(), new_diff.begin() + search_space);
       float ent = compute_entropy(cntr);
 
-      std::cerr << "- " << ci << ' ' << std::setprecision(10) << ent << '\n';
+      std::cerr << "[OPT] " << ci << ' ' << std::setprecision(10) << ent
+                << '\n';
 
       if (ent > prev_ent) {
         min_ci = ci - 1;
@@ -269,16 +262,17 @@ std::string EntropyAnalysis::optimize_entropy_for(
 
       prev_ent = ent;
     }
-    std::cerr << "min_ent=" << prev_ent << " min_ci=" << min_ci << "\n";
-    cursor = min_ci + 1;
+    std::cerr << "[OPT] min_ent=" << prev_ent << " min_ci=" << min_ci << "\n";
     new_cipher = char_removed_at(new_cipher, min_ci);
+    cursor = min_ci + 1;
   }
 
   return new_cipher;
 }
 
 std::shared_ptr<TrendsComparison> EntropyAnalysis::entropy_trend_analysis(
-    const Encoded &cipher_stream, std::size_t trend_start) {
+    const Encoded &cipher_stream, std::size_t trend_start,
+    float std_dev_threshold) {
   std::vector<std::vector<float>> trends;
   std::vector<Encoded> diffs = measure_diffs(cipher_stream);
   for (auto d : diffs) {
@@ -287,13 +281,14 @@ std::shared_ptr<TrendsComparison> EntropyAnalysis::entropy_trend_analysis(
     trends.push_back(trend);
   }
 
-  auto trends_comparison = std::make_shared<TrendsComparison>(trends);
+  auto trends_comparison =
+      std::make_shared<TrendsComparison>(trends, std_dev_threshold);
   return trends_comparison;
 }
 
 std::optional<std::size_t> EntropyAnalysis::run() {
   // Analyze the entropy difference on the first `search_space` character diffs
-  auto tc = entropy_trend_analysis(this->cipher_stream, search_space);
+  auto tc = entropy_trend_analysis(this->cipher_stream, search_space, 0.9f);
   auto answer = tc->detect_anomaly();
   if (answer.has_value()) {
     return answer;
@@ -306,11 +301,15 @@ std::optional<std::size_t> EntropyAnalysis::run() {
   // by removing a single character.
   for (std::size_t n_random = 1; n_random <= search_space * 0.05 * 2;
        n_random++) {
+    std::cerr << "[ENT] ----------------------------------------\n";
+    std::cerr << "[ENT] Expected number of random characters: " << n_random
+              << "\n";
+
     for (std::size_t pi = 0; pi < 5; pi++) {
-      std::cerr << "------------------------\n";
-      std::cerr << (pi + 1) << "-th plaintext\n";
+      std::cerr << "[ENT] Optimization target= " << (pi + 1)
+                << "-th plaintext\n";
       std::string opt_cipher = optimize_entropy_for(plaintexts[pi], n_random);
-      auto tc = entropy_trend_analysis(encode(opt_cipher), search_space);
+      auto tc = entropy_trend_analysis(encode(opt_cipher), search_space, 0.9f);
       auto anomaly = tc->detect_anomaly();
       if (anomaly.has_value()) {
         return anomaly;
@@ -322,10 +321,10 @@ std::optional<std::size_t> EntropyAnalysis::run() {
 
   for (auto it = optimized_ciphers.begin(); it != optimized_ciphers.end();
        it++) {
-    std::cerr << "[*] Trend anomaly test with "
+    std::cerr << "[ENT] Trend anomaly test with "
               << (it - optimized_ciphers.begin()) % 5
               << "th optimized ciphertext\n";
-    auto tc = entropy_trend_analysis(encode((*it)), search_space);
+    auto tc = entropy_trend_analysis(encode((*it)), search_space, 0.9f);
     auto anomaly = tc->detect_anomaly();
     if (anomaly.has_value()) {
       return anomaly;
@@ -334,9 +333,21 @@ std::optional<std::size_t> EntropyAnalysis::run() {
     }
   }
 
-  std::cerr << "[*] Answering with the ciphertext with the largest std dev\n";
   auto max_std = std::max_element(std_devs.begin(), std_devs.end());
   auto max_std_i = max_std - std_devs.begin();
+  std::cerr << "[ENT] Answering with the ciphertext with the largest std dev ("
+            << *max_std << ")\n";
+
+  // auto final_guess_cipher = optimized_ciphers[max_std_i];
+  // auto anomaly =
+  //     entropy_trend_analysis(encode(final_guess_cipher), search_space, 0.2f)
+  //         ->detect_anomaly();
+
+  // if (anomaly.has_value()) {
+  //   return anomaly;
+  // }
+
+  // return std::nullopt;
 
   return std::make_optional(max_std_i % 5);
 }

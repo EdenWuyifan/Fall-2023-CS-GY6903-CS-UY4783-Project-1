@@ -63,7 +63,8 @@ class EntropyAnalysis {
                                    std::size_t expected_randoms);
 
   std::shared_ptr<TrendsComparison> entropy_trend_analysis(
-      const Encoded &cipher_stream, std::size_t trend_start);
+      const Encoded &cipher_stream, std::size_t trend_start,
+      float std_dev_threshold);
 
  public:
   EntropyAnalysis(std::string ciphertext, std::vector<std::string> plaintexts,
