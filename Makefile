@@ -3,7 +3,7 @@ PYTHON=python
 ARGS=exampleestringexamplestring
 CPP_FLAGS = -std=c++17 -g -Wall -Wextra -fsanitize=address -fsanitize=undefined
 KEY_LEN=4
-SEARCH_SPACE=48
+SEARCH_SPACE=120
 
 KEY_LENS = 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24
 
@@ -27,6 +27,7 @@ $(OUTPUT): $(OBJS)
 	$(CC) $(CPP_FLAGS) $(OBJS) -o $(OUTPUT)
 
 all: build
+	@echo "Running with key length $(KEY_LEN) and search space $(SEARCH_SPACE)"
 	@mkdir -p results/$(SEARCH_SPACE)
 	- @cat resources/key_$(KEY_LEN)/cipher_1 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_1.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_1.err
 	- @cat resources/key_$(KEY_LEN)/cipher_2 | ./build/main 1 $(SEARCH_SPACE) > results/$(SEARCH_SPACE)/$(KEY_LEN)_2.out 2> results/$(SEARCH_SPACE)/$(KEY_LEN)_2.err
@@ -36,7 +37,7 @@ all: build
 
 test: build
 	@$(foreach key_len,$(KEY_LENS),$(MAKE) SEARCH_SPACE=$(SEARCH_SPACE) KEY_LEN=$(key_len) all;)
-	@python evaluate.py
+	@python evaluate.py $(SEARCH_SPACE)
 
 build: $(OUTPUT)
 

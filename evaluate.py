@@ -3,10 +3,15 @@
 
 import glob
 import os
+import sys
 from collections import defaultdict
 from prettytable import PrettyTable
 
 files = glob.glob('results/*/*.out')
+search_space = None
+if len(sys.argv) > 1:
+    search_space = sys.argv[-1]
+
 
 # read files and calculate accuracy
 
@@ -29,6 +34,8 @@ for file in sorted(files):
 
 
 for expand, result in sorted(results.items(), key=lambda x: x[0]):
+    if search_space is not None and expand != int(search_space):
+        continue
     print('Search Space =', expand)
     table = PrettyTable()
     acc_sum = 0.0
