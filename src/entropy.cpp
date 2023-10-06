@@ -298,9 +298,9 @@ std::optional<std::size_t> EntropyAnalysis::run() {
   std::vector<float> std_devs;
 
   // If the entropy difference is not significant, try to reduce the entropy
-  // by removing a single character.
-  for (std::size_t n_random = 1; n_random <= search_space * 0.05 * 2;
-       n_random++) {
+  // by removing characters.
+  std::size_t n_max_random = search_space * 0.05 * 1.5;
+  for (std::size_t n_random = 1; n_random <= n_max_random; n_random++) {
     std::cerr << "[ENT] ----------------------------------------\n";
     std::cerr << "[ENT] Expected number of random characters: " << n_random
               << "\n";
