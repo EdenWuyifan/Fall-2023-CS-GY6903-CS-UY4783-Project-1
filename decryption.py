@@ -195,11 +195,18 @@ def remove_many_chars_with_fft_test(ciphertext, plaintext, N=48, n_range=range(2
         ents = np.zeros((len(possible_indices), ))
         for i, indices in enumerate(possible_indices):
             # reuse precomputed diffs
-            diffs = []
-            diffs.extend(diffs_cache[0][:indices[0]])
+            cursor = 0
+            diffs = [None] * N
+
+            diffs[:indices[0]] = diffs_cache[0][:indices[0]]
+            cursor = indices[0]
+            # diffs.extend(diffs_cache[0][:indices[0]])
             for j, (start, stop) in enumerate(pairwise(indices)):
-                diffs.extend(diffs_cache[j+1][start-j:stop-j-1])
-            diffs.extend(diffs_cache[n_remove][indices[-1]-len(indices)+1:])
+                diffs[cursor:cursor + stop - start -1] = diffs_cache[j+1][start-j:stop-j-1]
+                cursor += stop - start - 1
+                # diffs.extend(diffs_cache[j+1][start-j:stop-j-1])
+            diffs[cursor:] = diffs_cache[n_remove][indices[-1]-len(indices)+1:]
+            # diffs.extend(diffs_cache[n_remove][indices[-1]-len(indices)+1:])
             diffs = np.array(diffs, dtype=int)
 
             ent = entropy(diffs)
