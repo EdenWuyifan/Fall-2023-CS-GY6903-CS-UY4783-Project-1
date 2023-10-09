@@ -1,9 +1,16 @@
 from itertools import combinations, pairwise
 import string
-import sys
 import cProfile
 
 import numpy as np
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--profile', action='store_true', default=False)
+args = parser.parse_args()
+
+if args.profile:
+    profiler = cProfile.Profile()
 
 ctoi = { ' ': 0 }
 
@@ -20,7 +27,6 @@ plains = [
     "schmeering institutor hairlocks speeder composers dramatics eyeholes progressives headmaster attractant subjugator peddlery vigil dogfights pixyish comforts aretes brewage felinities salerooms reminiscent hermaphrodism simultaneous spondaics hayfork armory refashioning battering darning tapper pancaked unaffected televiewer mussiness pollbook sieved reclines restamp cohosh excludes homelier coacts refashioned loiterer prospectively encouragers biggest pasters modernity governorships crusted buttoned wallpapered enamors supervisal nervily groaning disembody communion embosoming tattles turbans ",
 ]
 
-# profiler = cProfile.Profile()
 
 def stream_diff(s1, s2):
     if isinstance(s1, list):
@@ -279,7 +285,13 @@ def decrypt(ciphertext, N=30, threshold=0.186, std_multiplier=3):
 if __name__ == "__main__":
     ciphertext = input().strip()
 
+    if args.profile:
+        profiler.enable()
     guess, reason = decrypt(ciphertext)
-    # profiler.print_stats(sort='cumulative')
+
+    if args.profile:
+        profiler.disable()
+        profiler.print_stats(sort='tottime')
+
     print(reason)
     print(guess)
