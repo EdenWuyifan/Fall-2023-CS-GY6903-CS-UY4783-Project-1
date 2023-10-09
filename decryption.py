@@ -1,4 +1,4 @@
-from itertools import combinations
+from itertools import combinations, pairwise
 import string
 import sys
 import cProfile
@@ -179,15 +179,29 @@ def remove_chars(ciphertext, indices, N):
 
 
 def remove_many_chars_with_fft_test(ciphertext, plaintext, N=48, n_range=range(2, 5), std_multiplier=3):
-    plain_stream = encode(plaintext)
+    plain_stream = encode(plaintext[:N])
+    cipher_stream = encode(ciphertext[:N + 4])
+    diffs_cache: dict[int, list[int]] = {}
+
+    # precompute diffs
+    diffs_cache[0] = stream_diff(cipher_stream, plain_stream) # no removal
+    diffs_cache[1] = stream_diff(cipher_stream[1:], plain_stream) # remove first char
+    diffs_cache[2] = stream_diff(cipher_stream[2:], plain_stream) # remove first 2 chars
+    diffs_cache[3] = stream_diff(cipher_stream[3:], plain_stream) # remove first 3 chars
+    diffs_cache[4] = stream_diff(cipher_stream[4:], plain_stream) # remove first 4 chars
 
     for n_remove in n_range:
         possible_indices = list(combinations(range(N), n_remove))
         ents = np.zeros((len(possible_indices), ))
         for i, indices in enumerate(possible_indices):
-            new_ciphertext = remove_chars(ciphertext, indices, N)
-            new_cipher_stream = encode(new_ciphertext)
-            diffs = stream_diff(new_cipher_stream, plain_stream[:N])
+            # reuse precomputed diffs
+            diffs = []
+            diffs.extend(diffs_cache[0][:indices[0]])
+            for j, (start, stop) in enumerate(pairwise(indices)):
+                diffs.extend(diffs_cache[j+1][start-j:stop-j-1])
+            diffs.extend(diffs_cache[n_remove][indices[-1]-len(indices)+1:])
+            diffs = np.array(diffs, dtype=int)
+
             ent = entropy(diffs)
             ents[i] = ent
         
@@ -244,7 +258,6 @@ def decrypt(ciphertext, N=30, threshold=0.186, std_multiplier=3):
             ciphertext,
             plaintext,
             N=48,
-            n_range=range(2, 5),
             std_multiplier=std_multiplier
         )
 
