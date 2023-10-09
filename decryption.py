@@ -46,6 +46,7 @@ def stream_diff(s1, s2):
     return ds
 
 
+# Very Hot Function. Any optimization here will speed up the program significantly
 def entropy(data):
     counts = np.bincount(data)
     counts = counts[counts > 0]
