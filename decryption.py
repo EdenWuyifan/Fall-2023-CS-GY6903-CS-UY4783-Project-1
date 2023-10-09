@@ -20,7 +20,7 @@ plains = [
     "schmeering institutor hairlocks speeder composers dramatics eyeholes progressives headmaster attractant subjugator peddlery vigil dogfights pixyish comforts aretes brewage felinities salerooms reminiscent hermaphrodism simultaneous spondaics hayfork armory refashioning battering darning tapper pancaked unaffected televiewer mussiness pollbook sieved reclines restamp cohosh excludes homelier coacts refashioned loiterer prospectively encouragers biggest pasters modernity governorships crusted buttoned wallpapered enamors supervisal nervily groaning disembody communion embosoming tattles turbans ",
 ]
 
-profiler = cProfile.Profile()
+# profiler = cProfile.Profile()
 
 def stream_diff(s1, s2):
     if isinstance(s1, list):
@@ -43,8 +43,7 @@ def stream_diff(s1, s2):
 def entropy(data):
     counts = np.bincount(data)
     counts = counts[counts > 0]
-    # _, counts = np.unique(data, return_counts=True)
-    probs = counts / counts.sum()
+    probs = counts / len(data)
     ent = -np.sum(probs * np.log(probs))
     return ent
 
@@ -179,49 +178,28 @@ def remove_chars(ciphertext, indices, N):
     return ''.join(segments)
 
 
-def select_low_ent_indices(ciphertext, plain_stream, removal_indices, N, std_multiplier=3):
-    diffs_cache = {}
-
-    def compute_ent_after_removal(indices, N):
-        # ciphertext, plain_stream are always the same in this context
-        # indices decides the output diffs
-        profiler.enable()
-        new_ciphertext = remove_chars(ciphertext, indices, N)
-        new_cipher_stream = encode(new_ciphertext)
-        diffs = stream_diff(new_cipher_stream, plain_stream[:N])
-        ent = entropy(diffs)
-        profiler.disable()
-        return ent
-
-    ents = np.zeros((len(removal_indices), ))
-    for i, indices in enumerate(removal_indices):
-        ent = compute_ent_after_removal(indices, N)
-        ents[i] = ent
-
-    ent_avg = ents.mean()
-    ent_std = ents.std()
-    # print('n_ents=', len(ents), file=sys.stderr)
-
-    anomaly_indices = np.where(ents < ent_avg - std_multiplier * ent_std)
-    
-    return anomaly_indices
-
-
 def remove_many_chars_with_fft_test(ciphertext, plaintext, N=48, n_range=range(2, 5), std_multiplier=3):
     plain_stream = encode(plaintext)
 
     for n_remove in n_range:
         possible_indices = list(combinations(range(N), n_remove))
-        anomaly_indices = select_low_ent_indices(ciphertext, plain_stream, possible_indices, N)
+        ents = np.zeros((len(possible_indices), ))
+        for i, indices in enumerate(possible_indices):
+            new_ciphertext = remove_chars(ciphertext, indices, N)
+            new_cipher_stream = encode(new_ciphertext)
+            diffs = stream_diff(new_cipher_stream, plain_stream[:N])
+            ent = entropy(diffs)
+            ents[i] = ent
+        
+        ent_avg = ents.mean()
+        ent_std = ents.std()
+
+        anomaly_indices = np.where(ents < ent_avg - std_multiplier * ent_std)
 
         # using rank to test low-entropy candidates first
         # does not guarantee to find the answer faster
-
-        # print('n_remove', n_remove)
-        # print(f'{ent_avg=:.4f}, {ent_std=:.4f}, {ent_min=:.4f}, {n_anomalies=}')
         
         indices_list = np.array(possible_indices)[anomaly_indices]
-        # print(indices_list.shape, file=sys.stderr)
 
         for i, indices in enumerate(indices_list):
             new_ciphertext = remove_chars(ciphertext, indices, N)
@@ -236,7 +214,6 @@ def remove_many_chars_with_fft_test(ciphertext, plaintext, N=48, n_range=range(2
                 odd_zeros = np.all(mags[1::2] == 0)
 
                 if odd_zeros:
-                    # print('remove', indices, file=sys.stderr)
                     return tuple(indices)
 
     return -1
@@ -283,6 +260,6 @@ if __name__ == "__main__":
     ciphertext = input().strip()
 
     guess, reason = decrypt(ciphertext)
-    profiler.print_stats(sort='cumulative')
+    # profiler.print_stats(sort='cumulative')
     print(reason)
     print(guess)
