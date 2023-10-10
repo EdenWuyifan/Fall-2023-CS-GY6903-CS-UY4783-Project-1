@@ -1,0 +1,84 @@
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        3    0.190    0.063   22.994    7.665 main.py:195(remove_many_chars_with_fft_test)
+        8    0.808    0.101   22.357    2.795 main.py:178(select_low_ent_indices)
+   444432    1.930    0.000   13.558    0.000 main.py:33(entropy)
+2313124/979828    1.404    0.000   10.283    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+   444432    0.281    0.000    8.380    0.000 <__array_function__ internals>:177(unique)
+   444432    0.397    0.000    7.798    0.000 arraysetops.py:138(unique)
+   444432    2.457    0.000    7.215    0.000 arraysetops.py:323(_unique1d)
+   445770    4.541    0.000    4.712    0.000 main.py:16(stream_diff)
+   444432    0.214    0.000    2.214    0.000 <__array_function__ internals>:177(sum)
+   445773    0.279    0.000    2.077    0.000 main.py:39(encode)
+   444432    0.184    0.000    2.071    0.000 <__array_function__ internals>:177(diff)
+   444432    0.390    0.000    1.791    0.000 fromnumeric.py:2188(sum)
+   444432    1.483    0.000    1.653    0.000 function_base.py:1320(diff)
+   934367    1.470    0.000    1.470    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   489911    0.499    0.000    1.450    0.000 fromnumeric.py:69(_wrapreduction)
+   445770    0.961    0.000    1.226    0.000 main.py:166(remove_chars)
+   444432    0.138    0.000    1.033    0.000 {method 'sum' of 'numpy.ndarray' objects}
+   444432    0.210    0.000    0.985    0.000 <__array_function__ internals>:177(nonzero)
+   445773    0.967    0.000    0.967    0.000 main.py:40(<listcomp>)
+   445781    0.926    0.000    0.926    0.000 {built-in method numpy.array}
+   444432    0.114    0.000    0.895    0.000 _methods.py:47(_sum)
+   444432    0.203    0.000    0.879    0.000 <__array_function__ internals>:177(concatenate)
+   444432    0.152    0.000    0.590    0.000 fromnumeric.py:1892(nonzero)
+   444432    0.179    0.000    0.438    0.000 fromnumeric.py:51(_wrapfunc)
+   444432    0.425    0.000    0.425    0.000 {method 'sort' of 'numpy.ndarray' objects}
+  3609004    0.232    0.000    0.232    0.000 {built-in method builtins.len}
+   489911    0.219    0.000    0.219    0.000 fromnumeric.py:70(<dictcomp>)
+   444432    0.215    0.000    0.215    0.000 {method 'flatten' of 'numpy.ndarray' objects}
+   444432    0.196    0.000    0.196    0.000 {method 'nonzero' of 'numpy.ndarray' objects}
+  2614529    0.183    0.000    0.183    0.000 {method 'append' of 'list' objects}
+    45477    0.019    0.000    0.165    0.000 <__array_function__ internals>:177(all)
+   444432    0.158    0.000    0.158    0.000 {built-in method numpy.empty}
+    45477    0.017    0.000    0.156    0.000 <__array_function__ internals>:177(fft)
+   444432    0.115    0.000    0.148    0.000 arraysetops.py:125(_unpack_tuple)
+  1336004    0.132    0.000    0.132    0.000 {built-in method builtins.isinstance}
+    45477    0.022    0.000    0.128    0.000 fromnumeric.py:2432(all)
+    45477    0.029    0.000    0.123    0.000 _pocketfft.py:122(fft)
+  1333320    0.095    0.000    0.095    0.000 {built-in method numpy.asanyarray}
+    45477    0.024    0.000    0.086    0.000 _pocketfft.py:49(_raw_fft)
+   489925    0.066    0.000    0.066    0.000 {built-in method numpy.core._multiarray_umath.normalize_axis_index}
+   444440    0.063    0.000    0.063    0.000 {built-in method builtins.getattr}
+   445770    0.061    0.000    0.061    0.000 {method 'join' of 'str' objects}
+    45477    0.058    0.000    0.058    0.000 {built-in method numpy.fft._pocketfft_internal.execute}
+   444432    0.052    0.000    0.052    0.000 function_base.py:1316(_diff_dispatcher)
+   444432    0.050    0.000    0.050    0.000 fromnumeric.py:2183(_sum_dispatcher)
+   489912    0.044    0.000    0.044    0.000 {method 'items' of 'dict' objects}
+   444432    0.044    0.000    0.044    0.000 arraysetops.py:133(_unique_dispatcher)
+   444432    0.042    0.000    0.042    0.000 multiarray.py:152(concatenate)
+   444432    0.040    0.000    0.040    0.000 fromnumeric.py:1888(_nonzero_dispatcher)
+    45477    0.005    0.000    0.005    0.000 _pocketfft.py:78(_get_forward_norm)
+    45477    0.004    0.000    0.004    0.000 fromnumeric.py:2427(_all_dispatcher)
+    45477    0.004    0.000    0.004    0.000 _pocketfft.py:118(_fft_dispatcher)
+    45478    0.003    0.000    0.003    0.000 {built-in method numpy.asarray}
+        8    0.000    0.000    0.002    0.000 {method 'std' of 'numpy.ndarray' objects}
+        8    0.000    0.000    0.002    0.000 _methods.py:267(_std)
+        8    0.001    0.000    0.001    0.000 _methods.py:198(_var)
+       17    0.001    0.000    0.001    0.000 {built-in method builtins.print}
+        8    0.000    0.000    0.000    0.000 {built-in method numpy.zeros}
+        8    0.000    0.000    0.000    0.000 {method 'mean' of 'numpy.ndarray' objects}
+        8    0.000    0.000    0.000    0.000 _methods.py:164(_mean)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:1571(_array_str_implementation)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:561(array2string)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:506(wrapper)
+        8    0.000    0.000    0.000    0.000 <__array_function__ internals>:177(where)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:523(_array2string)
+       16    0.000    0.000    0.000    0.000 _methods.py:67(_count_reduce_items)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:452(_get_format_function)
+       16    0.000    0.000    0.000    0.000 {built-in method builtins.next}
+        8    0.000    0.000    0.000    0.000 contextlib.py:287(helper)
+        8    0.000    0.000    0.000    0.000 contextlib.py:141(__exit__)
+       16    0.000    0.000    0.000    0.000 _ufunc_config.py:452(_no_nep50_warning)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:410(<lambda>)
+        8    0.000    0.000    0.000    0.000 contextlib.py:132(__enter__)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:1223(__init__)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:780(_formatArray)
+        8    0.000    0.000    0.000    0.000 contextlib.py:104(__init__)
+      4/1    0.000    0.000    0.000    0.000 arrayprint.py:789(recurser)
+        8    0.000    0.000    0.000    0.000 {method 'reset' of '_contextvars.ContextVar' objects}
+       24    0.000    0.000    0.000    0.000 {built-in method builtins.hasattr}
+        1    0.000    0.000    0.000    0.000 <__array_function__ internals>:177(amax)
+        1    0.000    0.000    0.000    0.000 arrayprint.py:64(_make_options_dict)
+       35    0.000    0.000    0.000    0.000 {built-in method builtins.issubclass}
+        1    0.000    0.000    0.000    0.000 fromnumeric.py:2703(amax)

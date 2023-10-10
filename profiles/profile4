@@ -1,0 +1,26 @@
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.012    0.012   19.291   19.291 decryption.py:243(decrypt)
+        4    3.724    0.931   19.260    4.815 decryption.py:188(remove_many_chars_with_fft_test)
+   852057    4.800    0.000    9.923    0.000 decryption.py:50(entropy)
+  1822437    0.868    0.000    4.492    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+   852057    0.410    0.000    4.038    0.000 <__array_function__ internals>:177(sum)
+  4181872    3.786    0.000    3.786    0.000 {method 'extend' of 'list' objects}
+   852057    0.646    0.000    3.276    0.000 fromnumeric.py:2188(sum)
+   910728    0.832    0.000    2.674    0.000 fromnumeric.py:69(_wrapreduction)
+   910766    1.383    0.000    1.383    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   854803    1.285    0.000    1.285    0.000 {built-in method numpy.array}
+   852057    0.386    0.000    1.022    0.000 <__array_function__ internals>:177(bincount)
+   910728    0.381    0.000    0.381    0.000 fromnumeric.py:70(<dictcomp>)
+    58671    0.027    0.000    0.227    0.000 <__array_function__ internals>:177(all)
+    59155    0.024    0.000    0.217    0.000 <__array_function__ internals>:177(fft)
+    58671    0.031    0.000    0.176    0.000 fromnumeric.py:2432(all)
+    59155    0.041    0.000    0.172    0.000 _pocketfft.py:122(fft)
+  1776276    0.128    0.000    0.128    0.000 {built-in method builtins.len}
+    59155    0.033    0.000    0.120    0.000 _pocketfft.py:49(_raw_fft)
+   856650    0.102    0.000    0.102    0.000 {built-in method builtins.isinstance}
+    59155    0.081    0.000    0.081    0.000 {built-in method numpy.fft._pocketfft_internal.execute}
+   852057    0.079    0.000    0.079    0.000 fromnumeric.py:2183(_sum_dispatcher)
+   852057    0.078    0.000    0.078    0.000 multiarray.py:891(bincount)
+   910728    0.078    0.000    0.078    0.000 {method 'items' of 'dict' objects}
+     2271    0.024    0.000    0.026    0.000 decryption.py:32(stream_diff)
+        1    0.000    0.000    0.019    0.019 decryption.py:164(try_remove_one_random_char)

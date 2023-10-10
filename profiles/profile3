@@ -1,0 +1,39 @@
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   444432    2.802    0.000    6.562    0.000 decryption.py:43(entropy)
+   444432    4.789    0.000    4.962    0.000 decryption.py:25(stream_diff)
+   888864    0.516    0.000    2.293    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+   444432    0.283    0.000    2.234    0.000 decryption.py:52(encode)
+   444432    0.223    0.000    2.202    0.000 <__array_function__ internals>:177(sum)
+   444432    0.364    0.000    1.778    0.000 fromnumeric.py:2188(sum)
+   444432    0.460    0.000    1.360    0.000 fromnumeric.py:69(_wrapreduction)
+   888864    1.336    0.000    1.336    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   444432    0.967    0.000    1.232    0.000 decryption.py:170(remove_chars)
+   444432    1.035    0.000    1.035    0.000 decryption.py:53(<listcomp>)
+   444432    0.145    0.000    0.947    0.000 {method 'sum' of 'numpy.ndarray' objects}
+   444432    0.916    0.000    0.916    0.000 {built-in method numpy.array}
+   444432    0.118    0.000    0.803    0.000 _methods.py:47(_sum)
+   444432    0.210    0.000    0.611    0.000 <__array_function__ internals>:177(bincount)
+
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   444432    2.600    0.000    5.533    0.000 decryption.py:43(entropy)
+   444432    4.740    0.000    4.912    0.000 decryption.py:25(stream_diff)
+   888864    0.519    0.000    2.394    0.000 {built-in method numpy.core._multiarray_umath.implement_array_function}
+   444432    0.209    0.000    2.285    0.000 <__array_function__ internals>:177(sum)
+   444432    0.254    0.000    2.128    0.000 decryption.py:52(encode)
+   444432    0.355    0.000    1.875    0.000 fromnumeric.py:2188(sum)
+   444432    0.474    0.000    1.469    0.000 fromnumeric.py:69(_wrapreduction)
+   444432    0.920    0.000    1.172    0.000 decryption.py:170(remove_chars)
+   444432    0.984    0.000    0.984    0.000 decryption.py:53(<listcomp>)
+   444432    0.890    0.000    0.890    0.000 {built-in method numpy.array}
+   444432    0.762    0.000    0.762    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+   444432    0.214    0.000    0.617    0.000 <__array_function__ internals>:177(bincount)
+   444432    0.198    0.000    0.198    0.000 fromnumeric.py:70(<dictcomp>)
+  3111024    0.185    0.000    0.185    0.000 {built-in method builtins.len}
+  2163504    0.140    0.000    0.140    0.000 {method 'append' of 'list' objects}
+  1333296    0.129    0.000    0.129    0.000 {built-in method builtins.isinstance}
+   444432    0.053    0.000    0.053    0.000 {method 'join' of 'str' objects}
+   444432    0.043    0.000    0.043    0.000 fromnumeric.py:2183(_sum_dispatcher)
+   444432    0.042    0.000    0.042    0.000 multiarray.py:891(bincount)
+   444432    0.035    0.000    0.035    0.000 {method 'items' of 'dict' objects}
+   444432    0.029    0.000    0.029    0.000 {method 'disable' of '_lsprof.Profiler' objects}
