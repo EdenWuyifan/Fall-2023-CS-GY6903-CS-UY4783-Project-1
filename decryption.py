@@ -5,13 +5,6 @@ import cProfile
 import numpy as np
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--profile', action='store_true', default=False)
-args = parser.parse_args()
-
-if args.profile:
-    profiler = cProfile.Profile()
-
 ctoi = { ' ': 0 }
 
 for c in string.ascii_lowercase:
@@ -152,10 +145,9 @@ def search_fft_fit(ciphertext, plaintext, removal_candids, search_space=30, axes
             freqs = np.fft.fft(diffs)
             mags = np.abs(freqs)
             mags = mags[:len(mags)//2]
-            zeros = np.where(mags == 0)[0]
+            zeros = np.where(mags < 1e-5)[0]
 
-            if len(zeros) >= 1:
-                # print(len(zeros), diffs)
+            if len(zeros) >= len(mags) * 0.4:
                 return ss, ci
     
     return -1, None
@@ -238,10 +230,14 @@ def remove_many_chars_with_fft_test(ciphertext, plaintext, N=48, n_range=range(2
                 freqs = np.fft.fft(diffs[:M])
                 mags = np.abs(freqs)
                 mags = mags[:len(mags)//2]
+                zeros = np.where(mags < 1e-5)[0]
+                # odd_zeros = np.all(mags[1::2] == 0)
+                # if odd_zeros:
+                #     print(zeros)
+                #     print(mags)
+                #     return tuple(indices)
 
-                odd_zeros = np.all(mags[1::2] == 0)
-
-                if odd_zeros:
+                if len(zeros) >= len(mags) // 4:
                     return tuple(indices)
 
     return -1
@@ -285,6 +281,14 @@ def decrypt(ciphertext, N=30, threshold=0.186, std_multiplier=3):
 
 if __name__ == "__main__":
     ciphertext = input().strip()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--profile', action='store_true', default=False)
+    args = parser.parse_args()
+
+    if args.profile:
+        profiler = cProfile.Profile()
+
 
     if args.profile:
         profiler.enable()
