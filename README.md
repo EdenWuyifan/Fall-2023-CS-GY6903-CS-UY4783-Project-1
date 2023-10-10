@@ -1,47 +1,50 @@
-# General Usage
+# `decryption.py`
 
-The cryptanalysis program in written in C++.
-The project structure is as follows, each directory contains the following:
+The cryptanalysis program in written in Python with `numpy` module.
+You need to install `numpy` to run the Python program.
+Make sure that you have installed Python versio 3.11.4 or above.
 
-- `src`: the C++ source code
-- `include`: the C++ header files
-- `examples`: example ciphertexts and keys
-- `build`: the compiled program
-- `resources`: the testing data
+## Installation
 
-You need to install `make` to execute the following commands:
-
-- `make`: build the project
-- `make all EXPAND=3 KEY_LEN=4`: run cryptanalysis with expand factor 3 on test data encrypted using key length 4. There are test data of key length {4, 6, 8, 12, 17, 24}. The output will be under `results/` directory. You can refer to `results/{KEY_LEN}_{EXPAND}_{CORRECT_ANSWER}.{out, err}` file for the output and error message.
-
-After you run `make all EXPAND=... KEY_LEN=...`, you can visualize the testing result using the following Python script:
+First, check your Python version.
 
 ```
-> python evaluate.py
-
-Expand factor 3
-+------------+----------+----------+----------+----------+----------+----------+
-| Key Length | Correct1 | Correct2 | Correct3 | Correct4 | Correct5 | Accuracy |
-+------------+----------+----------+----------+----------+----------+----------+
-|     12     |    X     |    X     |   None   |   None   |   None   |   0.0%   |
-|     24     |    X     |    X     |    X     |    X     |   None   |   0.0%   |
-|     8      |    X     |    O     |    O     |    O     |    O     |  80.0%   |
-|     6      |    O     |    O     |    O     |    O     |    O     |  100.0%  |
-|     4      |    O     |    O     |    O     |    O     |    O     |  100.0%  |
-|     17     |    X     |    X     |   None   |   None   |   None   |   0.0%   |
-+------------+----------+----------+----------+----------+----------+----------+
+> python --version
+Python 3.11.4
 ```
 
-# `enc.py`
-
-This is a simple python program you can play around with to get a feel for how encryption works.
-
-## Usage
+Then, install `numpy` module using following command.
 
 ```
-> python enc.py $(cat examples/plaintext1) $(cat examples/key1)
-msg=[20, 8, 5, 0, 17, 21, 9, 3, 11, 0, 2, 18, 15, 23, 14, 0, 6, 15, 24, 0, 10, 21, 13, 16, 19, 0, 15, 22, 5, 18, 0, 20, 8, 5, 0, 12, 1, 26, 25, 0, 4, 15, 7]
-key=[1, 12, 3, 8, 10]
-len(rand_idx)=4 [4, 7, 23, 35]
-cipher='ekmjvrfxlkuanuwfoliwgavgxuztlrcoslwbpoaxdghapro'
+> python -m pip install numpy
 ```
+
+## Running the program
+
+The program takes an input ciphertext via stdin.
+You can run the program using the following command, with the example ciphertext provided.
+
+```
+> python decryption.py < resources/key_4/cipher_1
+```
+
+Or, you can run the program with your own ciphertext.
+
+```
+> python decryption.py
+Input ciphertext: [your ciphertext]
+```
+
+After you run, the program outputs what strategy it used to decrypt the ciphertext.
+Then, it outputs the 0-based index of the plaintext in the set.
+For example, the program outputs `0` if the plaintext is the first element in the set.
+
+```
+> python decryption.py < resources/key_4/cipher_1
+Input ciphertext:start anomaly
+0
+```
+
+The result is interpreted as the program decrypted the ciphertext using the start part of the ciphertext
+to measure the entropy, and detected anomaly.
+For more strategies, see the report.
