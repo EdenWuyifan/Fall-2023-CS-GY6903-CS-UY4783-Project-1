@@ -280,7 +280,7 @@ def decrypt(ciphertext, N=30, threshold=0.186, std_multiplier=3):
 
 
 if __name__ == "__main__":
-    ciphertext = input().strip()
+    ciphertext = input('Input ciphertext:').strip('\n')
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--profile', action='store_true', default=False)
